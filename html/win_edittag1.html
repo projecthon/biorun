@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+      <style>
+          body{
+            width:100%;
+          }
+          li{border-bottom: 1px solid #ccc;}
+      </style>
+  </head>
+  <body>
+    <header id='head' class="aui-bar aui-bar-nav">
+            <div class="aui-pull-left aui-btn" onclick="closeEditTag();">
+                <span class="aui-iconfont aui-icon-left"></span>返回
+            </div>
+            <div class="aui-title">编辑文章标签</div>
+        </header>
+
+<div class="" style="height:50px;"></div>
+<ul class="aui-list aui-list-in" id='usertag'>
+    <li class="aui-list-header">
+        推荐标签
+    </li>
+</ul>
+<ul class="aui-list aui-list-in" id='arttag'>
+    <li class="aui-list-header">
+        文章标签
+    </li>
+</ul>
+<ul class="aui-list aui-list-in">
+  <li class="aui-list-header">
+      自定义标签
+  </li>
+  <li class="aui-list-item">
+      <div class="aui-list-item-inner">
+          <div class="aui-list-item-title"><input style="background-color:#ccc;height:28px;border-radius: 3px;" type="text" placeholder="自定义标签" values="" id='taginput'></div>
+          <div class="aui-list-item-right">
+              <div class="aui-label aui-label-info" onclick='addTag(this,2);'>确定</div>
+          </div>
+      </div>
+  </li>
+</ul>
+  </body>
+  <script type="text/template" id='template1'>
+    {{ for(prop in it){ }}
+    <li class="aui-list-item" onclick='addTag(this,1);'>
+        <div class="aui-list-item-inner">
+            <div class="aui-list-item-title">{{=it[prop]}}</div>
+            <div class="aui-list-item-right">
+                <div class="aui-label aui-label-info">添加</div>
+            </div>
+        </div>
+    </li>
+    {{ } }}
+  </script>
+  <script type="text/template2" id='template2'>
+    {{ for(prop in it){ }}
+    <li class="aui-list-item" onclick="delTag(this);">
+        <div class="aui-list-item-inner">
+            <div class="aui-list-item-title">{{=it[prop]}}</div>
+            <div class="aui-list-item-right">
+                <div  class="aui-label aui-label-info">删除</div>
+            </div>
+        </div>
+    </li>
+    {{ } }}
+  </script>
+
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript" src="../script/doT.min.js"></script>
+  <script type="text/javascript">
+      apiready = function(){
+        api.addEventListener({
+            name: 'keyback'
+        }, function(ret, err){
+            closeEditTag();
+        });
+
+        initUserArtTag();
+      };
+
+      function initUserArtTag() {
+        var param = {userid:$api.getStorage('uid'),artid:api.pageParam['artid']};
+        //加载用户的tag，和用户收藏的这篇文章的tag
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Second/initTags1',
+            method: 'post',
+            data: {
+                values: param
+            }
+        },function(ret, err){
+            if (ret) {
+                //alert( JSON.stringify( ret ) );
+                var RTtag = {usertag:['tag1','tag2'],arttag:['tag1','tag2']};
+                var tempfn1 = doT.template($api.byId('template1').innerHTML);
+                var tempfn2 = doT.template($api.byId('template2').innerHTML);
+                var userTagStr = tempfn1(ret['userTag']);
+                var artTagStr = tempfn2(ret['artTag']);
+                //设置这两个元素
+                $api.append($api.byId('usertag'),userTagStr);
+                $api.append($api.byId('arttag'), artTagStr);
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+        });
+      }
+
+      function addTag(me,index){
+        if(index==1){
+          var str1 = $api.html($api.dom(me,'.aui-list-item-title'));
+        } else {
+          //这里是用btn添加标签的处理地方
+          var str1 = $api.val($api.byId('taginput'));
+          if(str1 == null || str1.trim() == ''){
+            api.toast({
+                msg: '不能为空',
+                duration: 2000,
+                location: 'bottom'
+            });
+            return;
+          }
+          //不能含有,号
+          if(str1.indexOf(',')>-1){
+            api.toast({
+                msg: '不能含有逗号',
+                duration: 2000,
+                location: 'bottom'
+            });
+            return;
+          }
+        }
+        var param = {'uid':$api.getStorage('uid'),'artid':api.pageParam['artid'],'newtag':str1};
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Second/addTag1',
+            method: 'post',
+            data: {
+                values: param
+            }
+        },function(ret, err){
+            if (ret) {
+                if(ret['status']==1){
+                  var str = '<li onclick="delTag(this);" class="aui-list-item"><div class="aui-list-item-inner">  <div class="aui-list-item-title">'+str1+'</div><div class="aui-list-item-right">  <div  class="aui-label aui-label-info">删除</div>  </div></div></li>';
+                  $api.append($api.byId('arttag'), str);
+                  api.toast({
+                      msg: '添加成功',
+                      duration: 2000,
+                      location: 'bottom'
+                  });
+                } else if(ret['status']==2) {
+                  api.toast({
+                      msg: '添加失败,已经存在',
+                      duration: 2000,
+                      location: 'bottom'
+                  });
+                }
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+        });
+
+      }
+
+      function delTag(me) {
+        var str1 = $api.html($api.dom(me,'.aui-list-item-title'));
+        var param = {'uid':$api.getStorage('uid'),'artid':api.pageParam['artid'],'newtag':str1};
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Second/delTag1',
+            method: 'post',
+            data: {
+                values:param
+            }
+        },function(ret, err){
+            if (ret) {
+                if(ret['status']==1){
+                  $api.remove(me);
+                  api.toast({
+                      msg: '删除成功',
+                      duration: 2000,
+                      location: 'bottom'
+                  });
+                } else {
+                  api.toast({
+                      msg: '删除失败',
+                      duration: 2000,
+                      location: 'bottom'
+                  });
+
+                }
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+        });
+      }
+
+      function closeEditTag(){
+        //更新detail frame的tag元素
+        api.execScript({
+            name: 'detail',
+            frameName: 'detailf',
+            script: 'getArtTag();'
+        });
+
+        api.closeWin({
+            name: 'artTag'
+        });
+
+      }
+  </script>
+  </html>

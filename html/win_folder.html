@@ -1,0 +1,348 @@
+ <!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+      <style>
+        body{background-color:#fff;}
+        .content{position: relative;left:0;width:100%;overflow-x: hidden;overflow-y: scroll;}
+        ul:first-child {border-top: 1px solid #ccc;}
+        li{border-bottom: 1px solid #ccc;height:40px;line-height:40px;}
+        li p span{float:right;height:100%;margin: 0 5px;text-decoration:underline}
+        .hide{display:none;}
+      </style>
+  </head>
+  <body>
+    <header class="aui-bar aui-bar-nav">
+      <div onclick="closeFolderWin();" class="aui-pull-left aui-btn">
+        <span class="aui-iconfont aui-icon-left"></span>返回
+      </div>
+      <div class="aui-title">文件夹管理</div>
+    </header>
+    <div class="content">
+      <ul id="dirlist">
+        <li id='dir0' onclick="dirSelect(this);"><p><i onclick='toggleSon(this);' class="aui-iconfont aui-icon-down"></i> 默认目录 <span class="hide right"><span onclick='fnAdd(this,0,"默认目录");'>添加</span></span></p></li>
+      </ul>
+    </div>
+  </body>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript">
+      apiready = function(){
+          //我们需要保证，这个content的起点y是header的高，它的高是header的高和winheight的差值
+          $api.setStorage('select3Open', 'no');
+          api.addEventListener({
+              name: 'keyback'
+          }, function(ret, err){
+              if( ret ){
+                   closeFolderWin();
+              }else{
+                   alert( JSON.stringify( err ) );
+              }
+          });
+
+          var headH = $api.offset($api.dom('.aui-bar')).h;
+          var contentH = api.winHeight - headH;
+          $api.css($api.dom('.content'),'top:'+headH+'px;height:'+contentH+'px');
+          initFolder();
+      };
+      var root = [];
+      var data = [];
+
+      function closeFolderWin(){
+        //这里是用来处理select3 是不是开着的
+        var flag = $api.getStorage('select3Open');
+        if(flag == 'yes'){
+          api.closeFrame({
+              name: 'dirselector3'
+          });
+          $api.setStorage('select3Open', 'no');
+        } else {
+          $api.rmStorage('select3Open');
+          api.closeWin();
+        }
+      }
+
+      function getfname(id){
+        for (var val in data) {
+          if(data[val].id == id){
+            return data[val].folder;
+          }
+        }
+      }
+
+      function initFolder(){
+        var param = {'uid':$api.getStorage('uid')};
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/First/getFolder',
+            method: 'post',
+            data: {
+                values:param
+            }
+        },function(ret, err){
+            if (ret) {
+                data = ret;
+                for (var val in ret) {
+                  if(ret[val].pid == "0"){
+                    root.push(ret[val]);
+                  }
+                }
+                for (var i = 0; i < root.length; i++) {
+                    initTree(ret,root[i].id,0,1);
+                }
+                root = [];
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+        });
+      }
+
+      function initTree(data,id,pid,konge){
+        var list = $api.byId('dirlist');
+        var nowNode = null;var childNodes = [];
+        //找到该节点
+        for (var i = 0; i < data.length; i++) {
+          if(data[i].id == id)
+            nowNode = data[i];
+        }
+        //找到子节点
+        for (var i = 0; i < data.length; i++) {
+          if(data[i].pid == id)
+           childNodes.push(data[i]);
+        }
+        //显示该节点
+        var nbsp='';var hasSon = "&nbsp;&nbsp;&nbsp;&nbsp;";
+        if(childNodes.length>0)
+          hasSon = "<i onclick='toggleSon(this);' class='aui-iconfont aui-icon-down'></i>";
+        for(i=1;i<=konge;i++){
+          nbsp+='&nbsp;&nbsp;&nbsp;&nbsp;';
+        }
+        str = "<li onclick='dirSelect(this);' id='dir"+nowNode.id+"'><p>"+nbsp+hasSon+nowNode.folder+" <span class='hide right'><span onclick='fnDel(this,"+nowNode.id+");'>删除</span><span onclick='fnMove(this,"+nowNode.id+");'>移动</span><span onclick='fnAlter(this,"+nowNode.id+");'>修改</span><span onclick='fnAdd(this,"+nowNode.id+");'>添加</span></span></p></li>";
+        //$('#dir'+pid).append(str);
+        $api.after($api.byId('dir'+pid), str);
+        //处理子节点
+        for (var i = 0; i < childNodes.length; i++) {
+          initTree(data,childNodes[i].id,id,konge+1);
+        }
+      }
+
+      function dirSelect(me){
+        var allright = $api.domAll('.right');
+        for (var i = 0; i < allright.length; i++) {
+          $api.addCls(allright[i], 'hide');
+        }
+        $api.removeCls(  $api.dom(me, '.right'), 'hide');
+      }
+
+      function fnMove(me,id){
+        event.stopPropagation();
+        //弹出树形frame,把 fid传过去，
+        //在新的frame里面，点击节点：询问是否移动，
+        api.openFrame({
+            name: 'dirselector3',
+            url: './frm_dirSelector3.html',
+            rect: {
+                x: 0,
+                y: 0,
+                w: 'auto',
+                h: 'auto'
+            },
+            pageParam: {
+                fid: id
+            },
+            bounces:false,
+            bgColor: 'rgba(0,0,0,0.5)',
+            vScrollBarEnabled: true,
+            hScrollBarEnabled: true
+        });
+
+      }
+
+      function fnDel(me,id){
+        event.stopPropagation();
+        //弹出确认按钮，询问，是否真的要删除
+        var fname = getfname(id);
+        //console.log('id:'+id+',fname:'+fname);return;
+        api.confirm({
+            title: '删除收藏夹',
+            msg: '确认要删除:'+fname+'？',
+            buttons: ['确定', '取消']
+        }, function(ret, err) {
+            var index = ret.buttonIndex;
+            if(index == 1){
+
+              //获取该收藏夹的id，提交到数据库，操作成功，返回结果，重新加载树，为什么要重新加载？
+              api.ajax({
+                  url: 'http://www.ftracker.cn/appserver/index.php/Home/Sixth/delFolder',
+                  method: 'post',
+                  data: {
+                      values: {fid:id,fname:fname,uid:$api.getStorage('uid')}
+                  }
+              },function(ret, err){
+                  if (ret) {
+                      var str = "<li id='dir0' onclick='dirSelect(this);'><p><i onclick='toggleSon(this);' class='aui-iconfont aui-icon-down'></i> 默认目录 <span class='hide right'><span onclick='fnAdd(this,0);'>添加</span></span></p></li>";
+                      $api.html($api.byId('dirlist'),str);
+                      initFolder();
+                      api.toast({
+                          msg: '删除成功',
+                          duration: 2000,
+                          location: 'bottom'
+                      });
+
+                  } else {
+                      alert( JSON.stringify( err ) );
+                  }
+              });
+            }
+        });
+      }
+
+      function fnAlter(me,id){
+        event.stopPropagation();
+        //弹出输入框
+        api.prompt({
+            title:'修改收藏夹名称',
+            msg:'收藏夹名称',
+            buttons: ['确定', '取消']
+        }, function(ret, err) {
+            var index = ret.buttonIndex;
+            var text = ret.text;
+            if(index == 1){
+              if(text.trim()==''){
+                api.toast({
+                    msg: '收藏夹不能为空',
+                    duration: 2000,
+                    location: 'bottom'
+                });
+                return;
+              }
+              api.ajax({
+                  url: 'http://www.ftracker.cn/appserver/index.php/Home/Sixth/alterFolder',
+                  method: 'post',
+                  data: {
+                      values: {fid:id,uid:$api.getStorage('uid'),newfolder:text}
+                  }
+              },function(ret, err){
+                  if (ret) {
+                      console.log( JSON.stringify( ret ) );
+                      var str = "<li id='dir0' onclick='dirSelect(this);'><p><i onclick='toggleSon(this);' class='aui-iconfont aui-icon-down'></i> 默认目录 <span class='hide right'><span onclick='fnAdd(this,0);'>添加</span></span></p></li>";
+                      $api.html($api.byId('dirlist'),str);
+                      initFolder();
+                      api.toast({
+                          msg: '修改成功',
+                          duration: 2000,
+                          location: 'bottom'
+                      });
+                  } else {
+                      alert( JSON.stringify( err ) );
+                  }
+              });
+            }
+        });
+      }
+
+      function fnAdd(me,id){
+        event.stopPropagation();
+        //弹出输入框
+        //var fname = getfname(id);
+        api.prompt({
+            title:'添加子收藏夹',
+            msg:'收藏夹名称',
+            buttons: ['确定', '取消']
+        }, function(ret, err) {
+            var index = ret.buttonIndex;
+            var text = ret.text;
+            if(index == 1){
+              if(text.trim()==''){
+                api.toast({
+                    msg: '收藏夹不能为空',
+                    duration: 2000,
+                    location: 'bottom'
+                });
+                return;
+              }
+              api.ajax({
+                  url: 'http://www.ftracker.cn/appserver/index.php/Home/Sixth/addFolder',
+                  method: 'post',
+                  data: {
+                      values: {fid:id,newfolder:text,uid:$api.getStorage('uid')}
+                  }
+              },function(ret, err){
+                  if (ret) {
+                      if(ret.status){
+                        var str = "<li id='dir0' onclick='dirSelect(this);'><p><i onclick='toggleSon(this);' class='aui-iconfont aui-icon-down'></i> 默认目录 <span class='hide right'><span onclick='fnAdd(this,0,\"默认目录\");'>添加</span></span></p></li>";
+                        $api.html($api.byId('dirlist'),str);
+                        initFolder();
+                        api.toast({
+                            msg: '添加成功',
+                            duration: 2000,
+                            location: 'bottom'
+                        });
+                      } else {
+                        api.toast({
+                            msg: '节点重复',
+                            duration: 2000,
+                            location: 'bottom'
+                        });
+                        return;
+                      }
+                  } else {
+                      alert( JSON.stringify( err ) );
+                  }
+              });
+
+            }
+        });
+      }
+
+      function fnMoveSucc(){
+        var str = "<li id='dir0' onclick='dirSelect(this);'><p><i onclick='toggleSon(this);' class='aui-iconfont aui-icon-down'></i> 默认目录 <span class='hide right'><span onclick='fnAdd(this,0);'>添加</span></span></p></li>";
+        $api.html($api.byId('dirlist'),str);
+        initFolder();
+      }
+
+      function toggleSon(me){
+        event.stopPropagation();
+        var meLi = me.parentNode.parentNode;
+        var myid = ($api.attr(meLi, 'id')).substr(3);//当前点击的li的id值
+
+        if($api.hasCls(me,'aui-icon-down')){
+          $api.removeCls(me, 'aui-icon-down');
+          $api.addCls(me, 'aui-icon-right');
+          //隐藏子节点
+          hideOrNot(myid,1);
+        } else {
+          $api.removeCls(me, 'aui-icon-right');
+          $api.addCls(me, 'aui-icon-down');
+          //显示子节点
+          hideOrNot(myid,2);
+        }
+      }
+
+      function hideOrNot(myid,index){
+        //隐藏该节点的儿子节点。。。,以及儿子的儿子节点
+        for (var i = 0; i < data.length; i++) {
+          if(data[i].pid == myid){
+            if(index == 1){ //关闭节点
+              $api.addCls($api.byId('dir'+data[i].id), 'hide');
+              //处理那个箭头
+              hideOrNot(data[i].id,index);
+            } else {   //开启节点
+              $api.removeCls($api.byId('dir'+data[i].id), 'hide');
+              //处理儿子的箭头
+              //节点的i给换标签了  data[i]
+              thei = $api.dom($api.byId('dir'+data[i].id),'i');
+              //console.log($api.html($api.byId('dir'+data[i].id)));
+              if(thei!=null){
+                $api.removeCls(thei, 'aui-icon-down');
+                $api.addCls(thei, 'aui-icon-right');
+              }
+            }
+
+          }
+        }
+      }
+  </script>
+  </html>

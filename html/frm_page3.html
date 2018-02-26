@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+      <style>
+          html,body{
+
+          }
+            .se{position: fixed;z-index: 10;}
+          ul:first-child {border-top: 1px solid #ccc;}
+          li{border-bottom: 1px solid #ccc;height:30px;line-height: 30px;}
+          #dirlist li{border: none;height:40px;line-height:40px;}
+          #dirlist{border-bottom:1px solid #ccc;}
+          #selector1 p{margin-left: 40px;}
+          td{height:30px;line-height: 30px;width:10%;}
+          .hide{display:none;}
+
+      </style>
+  </head>
+  <body style="overflow-y:hidden;">
+    <div class="loader" style="height:45px;">
+      <div class="aui-tab">
+              <div onclick="changeSearch(this);" id="tab0" class="aui-tab-item tapmode aui-active">收藏夹</div>
+              <div onclick="changeSearch(this);" id="tab1" class="aui-tab-item tapmode">标签</div>
+              <div onclick="changeSearch(this);" id="tab2" class="aui-tab-item tapmode">检索</div>
+              <div onclick="changeSearch(this);" id="tab3" class="aui-tab-item tapmode">等级</div>
+      </div>
+      <div id="tips-father" class="aui-tips hide">
+          <div id='tips' class="aui-tips-title">没有筛选条件</div>
+          <i class="aui-iconfont aui-icon-info" tapmode onclick=";"></i>
+      </div>
+    </div>
+    <div id="content" style="overflow-y:auto;">
+      <div class="selector hide" id="selector0">
+        <ul id="dirlist">
+          <li onclick='dirSelect(this,1);' id='dir0'><p><i onclick='toggleSon(this);' class="aui-iconfont aui-icon-down"></i> <span>默认目录</span></p></li>
+        </ul>
+      </div>
+
+      <div class="selector hide" id="selector1">
+        <ul id="taglist">
+        </ul>
+      </div>
+
+      <div class="selector hide" id="selector2">
+        <div class="aui-searchbar" id="search">
+              <div class="aui-searchbar-input aui-border-radius">
+                  <i class="aui-iconfont aui-icon-search"></i>
+                  <input type="search" placeholder="请输入搜索内容" id="search-input">
+                  <div class="aui-searchbar-clear-btn">
+                      <i class="aui-iconfont aui-icon-close"></i>
+                  </div>
+              </div>
+              <div class="aui-searchbar-btn" tapmode>取消</div>
+          </div>
+        <div onclick="dirSelect(this,3);" class="aui-btn aui-btn-block aui-btn-danger aui-btn-sm" style="margin:5px auto;width:90%;">确认搜索</div>
+      </div>
+
+      <div class="selector hide" id="selector3">
+        <div class="" style="padding:0 4px;padding-top:11px;padding-bottom:12px;font-size:14px;">
+          <label style="width:20%;">最低等级</label>
+          <label onclick="xiala(1);" id='level1' style="width:28%;background-color:#ccc;color:#fff;text-align:center;">未选择</label>
+          <label style="width:20%;">最高等级</label>
+          <label onclick="xiala(2);" id='level2' style="width:28%;background-color:#ccc;color:#fff;text-align:center;">未选择</label>
+        </div>
+        <div onclick="dirSelect(this,4);" class="aui-btn aui-btn-block aui-btn-danger aui-btn-sm" style="margin:5px auto;width:90%;">确认搜索</div>
+      </div>
+
+      <div id='artlist' class="aui-content" style="padding-top:5px;">
+        <p></p>
+          <!-- <p style="width:100%;text-align:center;">没有数据了</p> -->
+
+          <!-- <p style="width:100%;text-align:center;">没有数据了</p> -->
+      </div>
+    </div>
+  </body>
+  <script type="text/template" id="template">
+  {{ for(prop in it){ }}
+  <div class="aui-card-list aui-border-t aui-border-b" onclick="openDetail({{=it[prop].id}});" style="margin-bottom:5px;">
+      <div class="aui-info aui-padded-l-15 aui-padded-r-15">
+          <div class="aui-info-item aui-font-size-12">
+
+              <!-- <span class="aui-margin-l-5">{{=it[prop].author}}发表了文章</span> -->
+          </div>
+          <div class="aui-info-item">
+            <i class="aui-iconfont aui-icon-close"></i>
+          </div>
+      </div>
+      <div class="aui-card-list-header aui-padded-t-5 aui-padded-b-5" >
+          {{=it[prop].title}}
+      </div>
+      <div class="aui-card-list-content-padded aui-padded-t-0 aui-padded-b-0" style="color:#7b7b7b;">
+          {{=it[prop].title_zh}}
+      </div>
+      <div class="aui-card-list-footer aui-font-size-12" style="color:#999;">
+          <div style="width:100%;">
+              <p><span><i>{{=it[prop].journal}}</i><b style="margin-left:10px;">IF：{{=it[prop].impactf}}</b></span></p>
+              <p><span >Online:{{=it[prop].time}}</span><span style='margin-left:10px;'>Get-date:{{=it[prop].getdate}}</span></p>
+          </div>
+      </div>
+  </div>
+  {{ } }}
+  </script>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript" src="../script/doT.min.js" ></script>
+  <script type="text/javascript">
+      apiready = function(){
+        //下面两行是设置tab面板下面部分的高度，让他移动的时候，不影响上面4个tab的显示。
+        var height=api.frameHeight - 45;
+        $api.css($api.byId('content'), 'height:'+height+'px;');
+        initPage3();
+        for (var i = 0; i < data.length; i++) {
+          if(data[i].pid == 0){
+            initTree(data,data[i].id,0,1);
+          }
+        }
+      };
+
+      var isOpen = false;
+      var data = [];
+
+      function initPage3(){
+        //console.log($api.getStorage('uid'));
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Second/page3InitFolderAndTags',
+            method: 'post',
+            data: {
+                values: {
+                    uid: $api.getStorage('uid')
+                }
+            }
+        },function(ret, err){
+            if (ret) {
+              //初始化标签
+                var utag = ret.tags;
+                //console.log(JSON.stringify(utag));
+                //if(utag[0]!="" && utag[0]!=null){
+                  for (var val in utag) {
+                    if(utag[val]!=""){
+                      $api.append($api.byId('taglist'), "<li onclick='dirSelect(this,2);'><p>"+utag[val]+"</p></li>");
+                    }
+                  }
+                //初始化收藏夹
+                data = ret.folders;
+                var root = [];
+                for (var val in data) {
+                  if(data[val].pid == "0"){
+                    root.push(data[val]);
+                  }
+                }
+                for (var i = 0; i < root.length; i++) {
+                    //initTree(data,data[i].id,0,1);
+                    initTree(data,root[i].id,0,1);
+                }
+                //初始化文章列表
+                //console.log(JSON.stringify(ret.arts[0]));
+                var tempFn = doT.template($api.byId('template').innerHTML);
+                artListStr = tempFn(ret.arts);
+                artListStr += '<p style="width:100%;text-align:center;">没有数据了</p>';
+                $api.html($api.byId('artlist'),artListStr);
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+        });
+
+      }
+
+      function dirSelect(me,index){
+        //$api.setStorage('fid', id);
+        var param = {};
+        var tips = '';
+        param.uid = $api.getStorage('uid');
+        switch (index) {
+          case 1:
+            var id = ($api.attr(me,'id')).substr(3);
+            param.fid = id;
+            param.type = 1;
+            tips = "收藏夹："+$api.html($api.dom(me,'span'));
+            break;
+          case 2:
+            param.tag = $api.html($api.dom(me,'p'));
+            param.type = 2;
+            tips = "标签："+param.tag;
+            break;
+          case 3:
+            param.note = $api.val($api.byId('search-input'));
+            tips = "笔记："+param.note;
+            //如果为空值，那么就要退出了，并且提示，操作失败
+            if((param.note).trim() == ""){
+              api.toast({
+                  msg: '条件不能为空',
+                  duration: 2000,
+                  location: 'bottom'
+              });
+              return;
+            }
+            param.type = 3;
+            break;
+          case 4:
+              param.level1 = $api.html($api.byId('level1'));
+              param.level2 = $api.html($api.byId('level2'));
+            //如果level[0],level[1]，都为空，操作失败，如果一小一大，不让操作
+            if(param.level1=='未选择' && param.level2=='未选择'){
+              api.toast({
+                  msg: '等级选择错误',
+                  duration: 2000,
+                  location: 'bottom'
+              });
+              return;
+            } else {
+              if(param.level1!='未选择' && param.level2!='未选择' && param.level1>param.level2){
+                api.toast({
+                    msg: '等级选择错误',
+                    duration: 2000,
+                    location: 'bottom'
+                });
+                return;
+              }
+            }
+            tips = "等级：从"+param.level1+"到"+param.level2;
+            param.type = 4;
+            break;
+          default:
+        }
+          //console.log(JSON.stringify(param));return;
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Second/page3InitArt',
+            method: 'post',
+            data: {
+                values: param
+            }
+        },function(ret, err){
+            if (ret) {
+              //显示筛选条件
+              //$api.attr(, 'padding-top', '35px');
+              $api.css($api.byId('content'), 'padding-top:35px');
+              $api.removeCls($api.byId('tips-father'), 'hide');
+              $api.html($api.byId('tips'), tips);
+              //console.log(JSON.stringify(ret[0]));
+              var tempFn = doT.template($api.byId('template').innerHTML);
+
+              artListStr = tempFn(ret);
+              artListStr += '<p style="width:100%;text-align:center;">没有数据了</p>';
+              $api.html($api.byId('artlist'),artListStr);
+              //关闭面板
+              var panels = $api.domAll('.selector');
+              for (var i = 0; i < 4; i++) {
+                $api.addCls(panels[i], 'hide');
+              }
+              isOpen = false;
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+        });
+      }
+
+      function initTree(data,id,pid,konge){
+        var list = $api.byId('dirlist');
+        var nowNode = null;var childNodes = [];
+        //找到该节点
+        for (var i = 0; i < data.length; i++) {
+          if(data[i].id == id)
+            nowNode = data[i];
+        }
+        //找到子节点
+        for (var i = 0; i < data.length; i++) {
+          if(data[i].pid == id)
+           childNodes.push(data[i]);
+        }
+        //显示该节点
+        var nbsp='';var hasSon = "&nbsp;&nbsp;&nbsp;&nbsp;";
+        if(childNodes.length>0)
+          hasSon = "<i onclick='toggleSon(this);' class='aui-iconfont aui-icon-down'></i>";
+        for(i=1;i<=konge;i++){
+          nbsp+='&nbsp;&nbsp;&nbsp;&nbsp;';
+        }
+        str = "<li onclick='dirSelect(this,1);' id='dir"+nowNode.id+"'><p>"+nbsp+hasSon+"<span>"+nowNode.folder+"</span></p></li>";
+        //$('#dir'+pid).append(str);
+        $api.after($api.byId('dir'+pid), str);
+        //处理子节点
+        for (var i = 0; i < childNodes.length; i++) {
+          initTree(data,childNodes[i].id,id,konge+1);
+        }
+      }
+
+      function toggleSon(me){
+        event.stopPropagation();
+        var meLi = me.parentNode.parentNode;
+        var myid = ($api.attr(meLi, 'id')).substr(3);//当前点击的li的id值
+
+        if($api.hasCls(me,'aui-icon-down')){
+          $api.removeCls(me, 'aui-icon-down');
+          $api.addCls(me, 'aui-icon-right');
+          //隐藏子节点
+          hideOrNot(myid,1);
+        } else {
+          $api.removeCls(me, 'aui-icon-right');
+          $api.addCls(me, 'aui-icon-down');
+          //显示子节点
+          hideOrNot(myid,2);
+        }
+      }
+
+      function hideOrNot(myid,index){
+        //隐藏该节点的儿子节点。。。,以及儿子的儿子节点
+        for (var i = 0; i < data.length; i++) {
+          if(data[i].pid == myid){
+            if(index == 1){ //关闭节点
+              $api.addCls($api.byId('dir'+data[i].id), 'hide');
+              //处理那个箭头
+              hideOrNot(data[i].id,index);
+            } else {   //开启节点
+              $api.removeCls($api.byId('dir'+data[i].id), 'hide');
+              //处理儿子的箭头
+              //节点的i给换标签了  data[i]
+              thei = $api.dom($api.byId('dir'+data[i].id),'i');
+              //console.log($api.html($api.byId('dir'+data[i].id)));
+              if(thei!=null){
+                $api.removeCls(thei, 'aui-icon-down');
+                $api.addCls(thei, 'aui-icon-right');
+              }
+            }
+
+          }
+        }
+      }
+
+      function xiala(idx){
+        api.actionSheet({
+          //title: '底部弹出框测试',
+          cancelTitle: '取消选择',
+          //destructiveTitle: '红色警告按钮',
+          buttons: ['0','1', '2', '3','4','5']
+        }, function(ret, err) {
+          var index = ret.buttonIndex;
+          if(index == 7)
+          return
+          if(idx==1){
+            //给第一个设置值
+            $api.html($api.byId('level1'), index-1);
+          } else {
+            $api.html($api.byId('level2'), index-1);
+          }
+        });
+      }
+
+      function changeSearch(me){
+          var items = $api.domAll('.aui-tab-item');
+          for (var i = 0; i < 4; i++) {
+            $api.removeCls(items[i], 'aui-active');
+          }
+          $api.addCls(me, 'aui-active');
+          //控制面板的显示和隐藏
+          openPanel(me);
+          $api.byId('content').scrollTop = 0;
+      }
+
+      //开启选择器的面板，夹在内容上面
+      function openPanel(me){
+        var meIDX = ($api.attr(me, 'id')).substr(3);
+        if (isOpen) {
+          //找到开启的那个面板
+         // hasClass selector  not hasClass hide
+         var panels = $api.domAll('.selector');
+         var panelIDX=-1;
+         for (var i = 0; i < 4; i++) {
+           if($api.hasCls(panels[i],'hide')==false){
+             panelIDX = i;
+           }
+         }
+         if(meIDX == panelIDX){
+           $api.addCls($api.byId('selector'+panelIDX), 'hide');
+           isOpen = false;
+         } else {
+           //console.log('selector'+panelIDX);
+           $api.addCls($api.byId('selector'+panelIDX), 'hide');
+           $api.removeCls($api.byId('selector'+meIDX), 'hide');
+           //(这里需要加载面板数据)
+         }
+        } else {
+          $api.removeCls($api.byId('selector'+meIDX), 'hide');
+          //(这里需要加载面板数据)
+          isOpen = true;
+        }
+
+      }
+
+      function openDetail(id){
+        if(api.connectionType == 'none') {
+          api.toast({msg: '网络错误',duration: 2000,location: 'bottom'});
+          return;}
+        api.openWin({
+            name: 'detail',
+            url: './win_detail.html',
+            pageParam: {
+                artid: id,//或者用frameNumber也可以
+                index:1
+            }
+        });
+      }
+  </script>
+  </html>

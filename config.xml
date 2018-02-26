@@ -1,0 +1,69 @@
+ <widget id="A6067915603525"  version="0.0.4">
+    <name>biorun</name>
+    <description>
+        Example For APICloud.
+    </description>
+    <author email="951147409@qq.com" href="http://www.biorun.com">
+
+    </author>
+    <content src="index.html" />
+    <access origin="*" />
+    <preference name="pageBounce" value="false"/>
+	<preference name="appBackground" value="rgba(0,0,0,0.0)"/>
+	<preference name="windowBackground" value="rgba(0,0,0,0.0)"/>
+	<preference name="frameBackgroundColor" value="rgba(0,0,0,0.0)"/>
+	<preference name="hScrollBarEnabled" value="true"/>
+	<preference name="vScrollBarEnabled" value="true"/>
+	<preference name="autoLaunch" value="true"/>
+	<preference name="fullScreen" value="false"/>
+	<preference name="autoUpdate" value="true" />
+	<preference name="smartUpdate" value="false" />
+	<preference name="debug" value="true"/>  <preference name="softInputMode" value="resize"/>
+	<preference name="statusBarAppearance" value="true"/>
+	<permission name="readPhoneState" />
+	<permission name="camera" />
+	<permission name="record" />
+	<permission name="location" />
+	<permission name="fileSystem" />
+	<permission name="internet" />
+	<permission name="bootCompleted" />  <feature name="smsVerify">
+
+    <param name="android_app_key" value="23d9cae7a2b38"/>
+
+    <param name="android_app_secret" value="1c0130914c9e34812397fa963edd715e"/>
+
+    <param name="ios_app_key" value="23d9e808268e0"/>
+
+    <param name="ios_app_secret" value="015b253518b6a36d2cde06d8a4b30ce7"/>
+
+  </feature>
+
+  <feature name="QQPlus">
+   <param name="urlScheme" value="tencent1106638301" />
+   <param name="apiKey" value="1106638301" />
+</feature>
+
+<feature name="qq">
+   <param name="urlScheme" value="tencent1106638301" />
+   <param name="apiKey" value="1106638301" />
+</feature>
+
+<feature name="wx">
+  <param name="urlScheme" value="wxc3f1a31af6f00a6b"/>
+  <param name="apiKey" value="wxc3f1a31af6f00a6b"/>
+  <param name="apiSecret" value="ed00bf5ff50e3d37f57dabe6402fe031"/>
+</feature>
+
+<intent-filter>
+    <action name="android.intent.action.VIEW"/>
+    <category name="android.intent.category.DEFAULT"/>
+    <data scheme="rong" host="io.rong.fast" pathPrefix="/conversation/"/>
+</intent-filter>
+
+<feature name="rongCloud2">
+    <param name="appKey" value="x18ywvqfxnwoc" />
+</feature>
+
+	<permission name="hardware" />  <preference name="autoUpdate" value="true" />
+  <preference name="smartUpdate" value="true" />
+</widget>

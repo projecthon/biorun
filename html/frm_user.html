@@ -1,0 +1,275 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>AUI快速完成布局</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <style type="text/css">
+        .text-white {
+            color: #ffffff !important;
+        }
+        .aui-grid [class*=aui-col-] {
+            padding: 0.75rem 0;
+        }
+        .user-list-icon{width:25px;height:25px;background-size:100% 100%;
+        float:left;margin-right:10px;}
+        .user-list-icon2{width:22px;height:22px;background-size:100%;
+        float:left;margin-right:13px;}
+        .user-list-icon3{width:20px;height:20px;background-size:100%;
+        float:left;margin-right:15px;}
+    </style>
+</head>
+<body>
+    <!-- 顶部 -->
+    <section class="aui-content" id="user-info" style="border-top:1px solid #fff;">
+        <div class="aui-list aui-media-list aui-list-noborder aui-bg-info">
+            <div class="aui-list-item aui-list-item-middle">
+                <div class="aui-media-list-item-inner ">
+                    <div class="aui-list-item-media" style="width:3rem;" onclick="setUserInfo();">
+                        <img id="myphoto" style="width: 86px;height:43px;background-size:100% 100%;" style="border-redius:10px;" />
+
+                    </div>
+                    <div class="aui-list-item-inner aui-list-item-arrow">
+                        <div class="aui-list-item-text text-white aui-font-size-18" id="uname"></div>
+                        <!-- <div class="aui-list-item-text text-white">
+                           <div><i class="aui-iconfont aui-icon-mobile aui-font-size-14"></i>xxx****xxxx</div>
+                        </div> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="aui-content aui-grid aui-margin-b-15">
+        <div class="aui-row">
+            <!-- <div class="aui-col-xs-4 aui-border-r">
+                <big class="aui-text-warning">0.00<small> 元</small></big>
+                <div class="aui-gird-lable aui-font-size-12">余额</div>
+            </div> -->
+            <div class="aui-col-xs-6 aui-border-r">
+                <big class="aui-text-danger">0.00<small> 元</small></big>
+                <div class="aui-gird-lable aui-font-size-12">余额</div>
+            </div>
+            <div class="aui-col-xs-6">
+                <big class="aui-text-success">0.00<small> 分</small></big>
+                <div class="aui-gird-lable aui-font-size-12">积分</div>
+            </div>
+        </div>
+    </section>
+    <section class="aui-content">
+        <ul class="aui-list aui-list-in aui-margin-b-15">
+            <li onclick='openSubscribe();' class="aui-list-item">
+                <!-- <div class="aui-list-item-label-icon" style="border:1px solid #ccc;width:20px;height:20px;">
+                    <i class="aui-iconfont aui-icon-location aui-text-info"></i>
+                </div> -->
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">
+                    <!-- <p class="user-list-icon" style="background: url(../image/newIcon/key2.png);"></p> -->
+                    <img src="../image/newIcon/key.png" style="width:25px;height:25px;margin-right:10px;float:left;" alt="">
+                    关键词订阅
+                    </div>
+                </div>
+            </li>
+            <li onclick='openSubscribe2();' class="aui-list-item">
+                <!-- <div class="aui-list-item-label-icon">
+                    <i class="aui-iconfont aui-icon-cert aui-text-warning"></i>
+                </div> -->
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">
+                    <!-- <p class="user-list-icon" style="background: url(../image/newIcon/book.png);"></p> -->
+                    <img src="../image/newIcon/book.png" style="width:22px;height:22px;margin-right:13px;float:left;" alt="">杂志订阅
+                  </div>
+                </div>
+            </li>
+            <li onclick='openUserTag();' class="aui-list-item">
+                <!-- <div class="aui-list-item-label-icon">
+                    <i class="aui-iconfont aui-icon-lock aui-text-danger"></i>
+                </div> -->
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">
+                    <!-- <p class="user-list-icon2" style="background: url(../image/newIcon/tag2.png);"></p> -->
+                    <img src="../image/newIcon/tag2.png" style="width:22px;height:22px;margin-right:13px;float:left;" alt="">
+                      标签管理
+                    </div>
+                </div>
+            </li>
+            <li onclick="openFolder();" class="aui-list-item">
+                <!-- <div class="aui-list-item-label-icon">
+                    <i class="aui-iconfont aui-icon-cart aui-text-info"></i>
+                </div> -->
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">
+                      <!-- <p class="user-list-icon2" style="background: url(../image/newIcon/folder.png);"></p> -->
+                      <img src="../image/newIcon/folder.png" style="width:22px;height:22px;margin-right:13px;float:left;" alt="">
+                      收藏夹管理
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <ul class="aui-list aui-list-in">
+            <li onclick="logout();" class="aui-list-item">
+                <!-- <div class="aui-list-item-label-icon">
+                    <i class="aui-iconfont aui-icon-close aui-text-info"></i>
+                </div> -->
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div  class="aui-list-item-title">
+                      <!-- <p class="user-list-icon3" style="background: url(../image/newIcon/error2.png);"></p> -->
+                      <img src="../image/newIcon/error2.png" style="width:20px;height:20px;margin-right:15px;float:left;" alt="">
+                      退出登录
+                    </div>
+                </div>
+            </li>
+            <li class="aui-list-item">
+                <!-- <div class="aui-list-item-label-icon">
+                    <i class="aui-iconfont aui-icon-gear aui-text-warning"></i>
+                </div> -->
+                <div class="aui-list-item-inner aui-list-item-arrow">
+                    <div class="aui-list-item-title">
+                      <!-- <p class="user-list-icon2" style="background: url(../image/newIcon/cilun.png);"></p> -->
+                      <img src="../image/newIcon/option.png" style="width:22px;height:22px;margin-right:13px;float:left;" alt="">
+                      系统设置
+                    </div>
+                    <div class="aui-list-item-right">11M</div>
+                </div>
+            </li>
+        </ul>
+    </section>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript">
+    apiready = function () {
+      nickname = $api.getStorage('nickname');
+      $api.html($api.byId('uname'),nickname);
+      getUserInfo();
+    }
+
+    function getUserInfo(){
+      var myphoto = $api.byId('myphoto');
+      var random = Math.random();
+      var url = $api.getStorage('picture')+'?x='+random;
+      $api.attr(myphoto, 'src', url);
+    }
+
+    function setUserInfo(){
+      //打开一个弹出表单
+      api.actionSheet({
+          title: '选择',
+          cancelTitle: '取消',
+          buttons: ['拍照','相册']
+      }, function(ret, err){
+          if( ret ){
+            var sourceTypes = [
+                'camera',
+                'album'
+            ];
+            if (ret.buttonIndex == (sourceTypes.length + 1)) {
+                return;
+            }
+            api.getPicture({
+                sourceType: sourceTypes[ret.buttonIndex - 1],
+                encodingType: 'jpg',
+                mediaValue: 'pic',
+                destinationType: 'url',
+                allowEdit: true,
+                quality: 50,
+                targetWidth: 100,
+                targetHeight: 100,
+                saveToPhotoAlbum: false
+            }, function(ret, err){
+                if(ret){
+                  //ret.data//图片路劲
+                  uploadPhoto(ret.data);
+                }else{
+                     console.log(JSON.stringify(err));
+                }
+            });
+          }else{
+              alert( JSON.stringify( err ) );
+          }
+      });
+    }
+
+    function uploadPhoto(imgurl){
+      //将这个图片文件上传到服务器，服务器把这个图片保存起来
+      //console.log($api.getStorage('uname'));return;
+      api.ajax({
+          url: 'http://www.ftracker.cn/appserver/index.php/Home/Sixth/savePicture',
+          method: 'post',
+          data: {
+              values: {
+                  uid:$api.getStorage('uid')
+              },
+              files: {
+                  file: imgurl
+              }
+          }
+      },function(ret, err){
+          if (ret) {
+              $api.setStorage('picture','http://www.ftracker.cn/ManPhoto/ftrack_'+$api.getStorage('uid')+'.jpg');
+              getUserInfo();//更新用户头像
+          } else {
+              alert( JSON.stringify( err ) );
+          }
+      });
+
+    }
+
+    function openUserTag() {
+      api.openWin({
+          name: 'userTag',
+          url: './win_edittag2.html',
+          pageParam: {
+              name: 'test'
+          }
+      });
+    }
+    function openSubscribe() {
+      api.openWin({
+          name: 'subwin',
+          url: './win_sub.html',
+          pageParam: {
+              name: 'test'
+          }
+      });
+    }
+
+    function openSubscribe2(){
+      api.openWin({
+          name: 'subwin2',
+          url: './win_sub2.html',
+          pageParam: {
+              name: 'test'
+          }
+      });
+
+    }
+
+    function openFolder() {
+      api.openWin({
+          name: 'folder',
+          url: './win_folder.html',
+          pageParam: {
+              name: 'test'
+          }
+      });
+
+    }
+
+    function logout(){
+      $api.clearStorage();
+      //
+      api.closeWin({
+          name: 'main'
+      });
+      api.openWin({
+          name: 'login',
+          url: './win_login.html',
+          pageParam: {
+              name: 'test'
+          }
+      });
+    }
+</script>
+</html>

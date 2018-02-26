@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+      <style>
+          body{
+            background-color: #fff;
+          }
+          .hide{display: none;}
+          #searchBtn{
+            width:100%;height:30px;line-height: 30px;background-color: #f3f3f3;margin-top: 10px;padding-left: 20px;
+          }
+      </style>
+  </head>
+  <body>
+        <div class="aui-searchbar" id="search">
+            <div class="aui-searchbar-input aui-border-radius">
+                <i class="aui-iconfont aui-icon-search"></i>
+                <input type="search" placeholder="请输入搜索内容" id="search-input" oninput="searchUser();">
+                <div class="aui-searchbar-clear-btn">
+                    <i class="aui-iconfont aui-icon-close"></i>
+                </div>
+            </div>
+            <!-- <div class="aui-searchbar-btn" tapmode>取消</div> -->
+        </div>
+
+        <div id="searchBtn" onclick="doSearch();">
+          <span style="color:red">搜索:</span><span id="searchtitle"></span>
+        </div>
+  </body>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript">
+      apiready = function(){
+          //$api.val(el, 'val');
+
+      };
+
+      function searchUser(){
+        $api.html($api.byId('searchtitle'), $api.val($api.byId('search-input')));
+      }
+
+      function doSearch(){
+        //如果位空，不做处理，
+        //如果查到了，跳到用户详细页
+        //如果查不到，显示，该用户不存在。
+        var searchtitle = $api.html($api.byId('searchtitle'));
+        if (searchtitle == "")
+          return;
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Eighth/searchUser',
+            method: 'post',
+            data: {
+                values: {
+                    nickname: searchtitle
+                }
+            }
+        },function(ret, err){
+            if (ret) {
+                if (ret.status == 1) {//查到此人
+                  console.log(JSON.stringify(ret.user.nickname));
+                  api.openWin({
+                      name: 'homepage',
+                      url: './win_homepage.html',
+                      pageParam: {
+                        uid: ret.user.id,
+                        nickname:ret.user.nickname,
+                        username:ret.user.username,
+                        picture:ret.user.picture,
+                        isfriend:false
+                      }
+                  });
+
+                } else {//没有此人
+                  api.toast({msg: '没有此人',duration: 2000,location: 'bottom'});
+                }
+            } else {
+                console.log( JSON.stringify( err ) );
+            }
+        });
+
+      }
+  </script>
+  </html>

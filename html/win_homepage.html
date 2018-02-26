@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+
+      <style>
+          body{
+             background-color: #fff;
+          }
+          .man-head{
+            width:100%;height: 210px;
+            background-image: url(../image/l3.png);
+          }
+          p{margin-left: 20px;}
+          .pipo{
+              background-color: #fff;
+              border-bottom: 1px solid #ccc;
+              font-size: 14px;
+              line-height: 40px;
+              height: 40px;
+          }
+          .pipo-photo{
+              float:left;
+              width:30px;height:30px;
+              margin: 5px;border: 1px solid #ccc;border-radius: 15px;
+              background-image: url(../image/f1.jpg);
+              background-size: 100% 100%;
+          }
+          .pipo p{margin-left: 10px; color:#000;}
+          .hide{display: none;}
+      </style>
+  </head>
+  <body>
+<!-- 显示个人信息，包括添加好友，删除好友，分组（管理）<br/>
+显示群组信息，包括邀请好友，退出群组和群成员 -->
+<div class="man-head">
+  <p style="color:#fff;">< 返回</p>
+  <div style="color:#fff;position: relative;left:0;top:110px;">
+    <p style="color:#fff;" id="nickname"></p>
+    <p style="color:#fff;">学位:工科博士</p>
+    <p style="color:#fff;">25岁 武汉人</p>
+  </div>
+</div>
+<p style="height:70px"></p>
+<div class="man-info">
+  <p>账号：11111111@qq.com</p>
+  <p>分组：我的好友</p>
+</div>
+<p style="height:70px;"></p>
+<div class="aui-btn aui-btn-block aui-btn-outlined aui-btn-sm" id="fbtn-add" onclick="fnAddFriend();">添加好友</div>
+<div class="aui-btn aui-btn-block aui-btn-outlined aui-btn-sm hide" id="fbtn-del" onclick="fnDelFriend();">删除好友</div>
+<p style="height:10px;"></p>
+  </body>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript">
+      apiready = function(){
+          $api.html($api.byId('nickname'), api.pageParam.nickname);
+          if (api.pageParam.isfriend) {
+             $api.addCls($api.byId('fbtn-add'), 'hide');
+             $api.removeCls($api.byId('fbtn-add'), 'hide');
+
+          }
+      };
+
+      function fnAddFriend(){
+        rong = api.require('rongCloud2');
+        rongyun();
+        //现在，这个融云要发送消息了，自己的token，页面的pageuid和pagenickname
+
+      }
+
+      function fnDelFriend(){
+
+      }
+
+      // 接入融云
+      function rongyun () {
+          //点击sendBtn 调用  rong's发送消息
+          // 初始化rongyun 调用  rong's接收消息
+          rong.init(function(ret, err) {
+              if (ret.status == 'error')
+                  api.toast({ msg: err.code });
+          });
+          // 监听接收消息
+          //receiveMsg(); //融云监听接受，然后发送去新的事件，
+          //但是融云不需要监听发送事件（因为发送本来是他主动完成的），然后发送新的事件
+          var token = $api.getStorage('token');
+          rong.connect(
+              {
+                  token: token
+              },function(ret, err) {
+                  if (ret.status == 'success'){
+                    console.log("通过token我知道你的id："+ret.result.userId);
+                    //api.toast({ msg: })
+                  }
+              });
+
+      }
+  </script>
+  </html>

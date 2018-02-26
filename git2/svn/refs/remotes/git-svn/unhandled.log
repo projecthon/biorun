@@ -1,0 +1,50 @@
+r1
+  +empty_dir: feature
+  +empty_dir: res
+  +empty_dir: wgt
+  +file_prop: icon/icon150x150.png svn:mime-type image/png
+  +file_prop: image/loading_more.gif svn:mime-type image/gif
+  +file_prop: launch/launch1080x1920.png svn:mime-type image/png
+r2
+r3
+r4
+r5
+r6
+r7
+r8
+r9
+r10
+r11
+r12
+r13
+r14
+r15
+r16
+r17
+r18
+r19
+r20
+r21
+r22
+  -empty_dir: image/newIcon/cilun.png
+r23
+r24
+r25
+r26
+r27
+r28
+r29
+r30
+r31
+r32
+r33
+r34
+  -empty_dir: res/key.xml
+r35
+r36
+r37
+r38
+r39
+r40
+  -empty_dir: script/swiper-3.4.2.min.js
+r41

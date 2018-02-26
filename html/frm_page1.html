@@ -1,0 +1,385 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,aItemress=no">
+    <title>AUI快速完成布局</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <style media="screen">
+      .se{position: fixed;z-index: 10;}
+      .hide{display: none;}
+    </style>
+</head>
+<body>
+<div class='se' style="background-color:#fff;">
+  <div class="">
+    <div class="aui-bar aui-bar-btn" style="width:80%;margin-top:10px;margin-bottom:5px;">
+              <div id='togdir' onclick='toggledir();' class="aui-bar-btn-item">展开子文件夹</div>
+              <div onclick='toUpperPage();' class="aui-bar-btn-item">返回上一级</div>
+              <div onclick='addDir();' class="aui-bar-btn-item">添加收藏夹</div>
+    </div>
+  </div>
+  <ul id='dir' class="aui-list aui-list-in hide">
+
+  </ul>
+</div>
+<div id='artlist' class="aui-content" style="padding-top:5px;">
+    <!-- <p style="width:100%;text-align:center;">没有数据了</p> -->
+</div>
+</body>
+<script type="text/template" id='template2'>
+  {{ for(var prop in it){ }}
+  <li onclick='openDirPage(this);' class="aui-list-item" style="border-bottom:1px solid #ddd;border-top:1px solid #ddd;">
+      <div class="aui-list-item-inner">
+          <div class="aui-list-item-title">{{=it[prop].folder}}</div>
+          <div class="aui-list-item-right">
+              <div onclick="delDir(this)" class="aui-label aui-label-info" style="padding:10px;">删除</div>
+          </div>
+      </div>
+  </li>
+  {{ } }}
+</script>
+<script type="text/template" id='template1'>
+  {{ for(var prop in it){ }}
+  <div class="aui-card-list aui-border-t aui-border-b" onclick="openDetail({{=it[prop].id}})" style="margin-bottom:5px;">
+      <div class="aui-info aui-padded-l-15 aui-padded-r-15">
+          <div class="aui-info-item aui-font-size-12">
+              <span class="aui-margin-l-5">{{=it[prop].author}}发表的热门文章</span>
+          </div>
+          <div class="aui-info-item">
+              <i class="aui-iconfont aui-icon-more"></i>
+          </div>
+      </div>
+      <div class="aui-card-list-header aui-padded-t-5 aui-padded-b-5">
+          {{=it[prop].title}}
+      </div>
+      <div class="aui-card-list-content-padded aui-padded-t-0 aui-padded-b-0" style="color:#7b7b7b;">
+          {{=it[prop].title_zh}}
+      </div>
+      <div class="aui-card-list-footer aui-font-size-12" style="color:#999;">
+          <div style="width:100%;">
+              <span>{{=it[prop].journal}}</span><span style='margin-left:30px;border:1px solid #ccc;'>{{=it[prop].time}}</span>
+          </div>
+      </div>
+  </div>
+  {{ } }}
+</script>
+<script type="text/javascript" src="../script/doT.min.js" ></script>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript">
+    apiready = function(){
+        api.parseTapmode();
+        $api.rmStorage('stack');
+        api.addEventListener({
+            name: 'offline'
+        }, function(ret, err){
+            api.toast({
+                msg: '断网了',
+                duration: 2000,
+                location: 'bottom'
+            });
+
+        });
+
+        initArts("");
+    }
+
+    /**
+    *
+    */
+    function initArts(f){
+      if(api.connectionType == 'none') {
+        api.toast({msg: '网络错误',duration: 2000,location: 'bottom'});
+        return;}
+        //这里请求数据
+        api.showProgress({
+            title: '努力加载中...',
+            text: '先喝杯茶...',
+            modal: false
+        });
+      var param = {uid:$api.getStorage('uid'),folder:f};
+      api.ajax({
+          url: 'http://www.ftracker.cn/appserver/index.php/Home/Second/InitPage1',
+          method: 'post',
+          data: {
+              values:param
+          }
+      },function(ret, err){
+          if (ret) {
+              //alert( JSON.stringify( ret ) );
+              var strHead = '<div class="buju" style="margin-top:50px;"></div>';
+              if((ret.arts).length!=0){
+                var tempFn = doT.template($api.byId('template1').innerHTML);
+                var artListStr = tempFn(ret.arts);
+                artListStr += '<p style="width:100%;text-align:center;">没有数据了</p>';
+              } else {
+                var artListStr = '<p style="width:100%;text-align:center;">没有数据了</p>';
+              }
+              $api.html($api.byId('artlist'),strHead+artListStr);
+              var folderListStr='';
+              if((ret.folders).length!=0){
+                var tempFn = doT.template($api.byId('template2').innerHTML);
+                var folderListStr = tempFn(ret.folders);
+              }
+              $api.html($api.byId('dir'),folderListStr);
+          } else {
+              alert( JSON.stringify( err ) );
+          }
+          api.hideProgress();
+      });
+    }
+    function openDirPage(me){
+      if(api.connectionType == 'none') {
+        api.toast({msg: '网络错误',duration: 2000,location: 'bottom'});
+        return;}
+      //询问有无pid，无：创建栈，有：入栈
+      var htm = $api.html($api.dom(me,'.aui-list-item-title'));
+      //把htm这个名称 保存（作为pid），当做参数。
+          var stack = $api.getStorage('stack');
+          if(typeof(stack)=='undefined') {
+            var stack = [];stack[0] = htm;
+            $api.setStorage('stack', stack);
+          } else {
+            stack[stack.length] = htm;
+            $api.setStorage('stack', stack);
+          }
+      //重新加载页面
+        initArts(htm);
+        //console.log($api.getStorage('stack'));
+    }
+
+    function toUpperPage(){
+      if(api.connectionType == 'none') {
+        api.toast({msg: '网络错误',duration: 2000,location: 'bottom'});
+        return;}
+      //询问有无pid，无：拒绝操作，有：出栈操作
+      var stack = $api.getStorage('stack');
+      if(typeof(stack)=='undefined'){
+        api.toast({
+            msg: '没有上一级',
+            duration: 2000,
+            location: 'bottom'
+        });
+      } else {
+        var folder = stack.pop();
+        if(stack.length==0){
+          $api.rmStorage('stack');
+        } else {
+          $api.setStorage('stack', stack);
+        }
+        //初始化这个folder的pid的收藏夹
+        api.showProgress({
+            title: '努力加载中...',
+            text: '先喝杯茶...',
+            modal: false
+        });
+        var param = {uid:$api.getStorage('uid'),folder:folder};
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Second/InitPage1p',
+            method: 'post',
+            data: {
+                values: param
+            }
+        },function(ret, err){
+            if (ret) {
+                //alert( JSON.stringify( ret ) );
+                var strHead = '<div class="buju" style="margin-top:50px;"></div>';
+                if((ret.arts).length!=0){
+                  var tempFn = doT.template($api.byId('template1').innerHTML);
+                  var artListStr = tempFn(ret.arts);
+                  artListStr += '<p style="width:100%;text-align:center;">没有数据了</p>';
+                } else {
+                  var artListStr = '<p style="width:100%;text-align:center;">没有数据了</p>';
+                }
+                $api.html($api.byId('artlist'),strHead+artListStr);
+                var folderListStr='';
+                if((ret.folders).length!=0){
+                  var tempFn = doT.template($api.byId('template2').innerHTML);
+                  var folderListStr = tempFn(ret.folders);
+                }
+                $api.html($api.byId('dir'),folderListStr);
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+            api.hideProgress();
+        });
+
+      }
+    }
+    function addDir(){
+      //并且在folderlist后面加一个li
+      if(api.connectionType == 'none') {
+        api.toast({msg: '网络错误',duration: 2000,location: 'bottom'});
+        return;}
+      api.prompt({
+        title:'添加文件夹',
+        text:'新建收藏夹',
+        buttons: ['确定', '取消']
+      }, function(ret, err){
+          if( ret ){
+               if(ret.buttonIndex==1){
+                 var stack = $api.getStorage('stack');
+                 var xfolder = null;
+                 if(typeof(stack)=='undefined'){
+                   xfolder = -1;
+                 } else {
+                   xfolder = stack[stack.length-1];
+                 }
+                 var param = {folder:ret.text,pfolder:xfolder,uid:$api.getStorage('uid')};
+                 api.showProgress({
+                     title: '努力保存中...',
+                     text: '先喝杯茶...',
+                     modal: false
+                 });
+                 api.ajax({
+                     url: 'http://www.ftracker.cn/appserver/index.php/Home/Third/addFolder',
+                     method: 'post',
+                     data: {
+                         values: param
+                     }
+                 },function(ret, err){
+                     if (ret) {
+                         if(ret.status==1){
+                           //添加成功,在list后面加一行
+                           var html = "<li onclick='openDirPage(this);' class='aui-list-item'";
+                           html+=" style='border-bottom:1px solid #ddd;border-top:1px solid #ddd;'><div class='aui-list-item-inner'>";
+                           html+="<div class='aui-list-item-title'>"+param.folder+"</div><div class='aui-list-item-right'><div onclick='delDir(this)' class='aui-label aui-label-info' style='padding:10px;'>删除</div></div></div></li>";
+                           $api.append($api.byId('dir'),html);
+                           api.toast({
+                               msg: '添加成功',
+                               duration: 2000,
+                               location: 'bottom'
+                           });
+
+                         }else if(ret.status==2){
+                           api.toast({
+                               msg: '添加失败',
+                               duration: 2000,
+                               location: 'bottom'
+                           });
+                         }else if(ret.status==3){
+                           api.toast({
+                               msg: '收藏夹已经存在',
+                               duration: 2000,
+                               location: 'bottom'
+                           });
+                         }
+                     } else {
+                         alert( JSON.stringify( err ) );
+                     }
+                     api.hideProgress();
+                 });
+
+               }
+          }else{
+               alert( JSON.stringify( err ) );
+          }
+      });
+    }
+
+    function delDir(me){
+        //获取这个folder，
+        if(api.connectionType == 'none') {
+          api.toast({msg: '网络错误',duration: 2000,location: 'bottom'});
+          return;}
+        event.stopPropagation();
+        api.confirm({
+            title: '确定要删除吗',
+            msg:'确定要删除吗',
+            buttons: ['确定', '取消']
+        }, function(ret, err){
+            if( ret ){
+                 if(ret.buttonIndex==1){
+
+                   var htm = $api.html($api.dom(me.parentNode.parentNode,'.aui-list-item-title'));
+                   var param = {uid:$api.getStorage('uid'),folder:htm};
+                   api.ajax({
+                       url: 'http://www.ftracker.cn/appserver/index.php/Home/Third/delFolder',
+                       method: 'post',
+                       data:{
+                           values: param
+                       }
+                   },function(ret, err){
+                       if (ret) {
+                           //alert( JSON.stringify( ret ) );
+                           if(ret.status==1){
+                             //删除成功
+                             $api.remove(me.parentNode.parentNode.parentNode);
+                             api.toast({
+                                 msg: '删除成功',
+                                 duration: 2000,
+                                 location: 'bottom'
+                             });
+
+                           } else if(ret.status==2){
+                             //删除失败
+                             api.toast({
+                                 msg: '删除失败',
+                                 duration: 2000,
+                                 location: 'bottom'
+                             });
+                           }else if(ret.status==3){
+                             //不让删除
+                             api.toast({
+                                 msg: '该文件夹含有文章内容',
+                                 duration: 2000,
+                                 location: 'bottom'
+                             });
+
+                           }
+                       } else {
+                           alert( JSON.stringify( err ) );
+                       }
+                   });
+
+                 }
+            }else{
+                 alert( JSON.stringify( err ) );
+            }
+        });
+
+    }
+
+    function openDetail(id){
+      if(api.connectionType == 'none') {
+        api.toast({msg: '网络错误',duration: 2000,location: 'bottom'});
+        return;}
+      api.openWin({
+          name: 'detail',
+          url: './win_detail.html',
+          pageParam: {
+              artid: id,//文章id，
+              index:1
+          }
+      });
+
+    }
+
+    function toggledir(){
+      var dir = $api.byId('dir');
+      var togdir = $api.byId('togdir');
+      if($api.hasCls(dir, 'hide')){
+        $api.removeCls(dir, 'hide');
+        $api.html(togdir, '折叠子文件夹');
+      } else {
+        $api.addCls(dir, 'hide');
+        $api.html(togdir, '展开子文件夹');
+      }
+    }
+
+    function openDetail(id){
+      if(api.connectionType == 'none') {
+        api.toast({msg: '网络错误',duration: 2000,location: 'bottom'});
+        return;}
+      api.openWin({
+          name: 'detail',
+          url: './win_detail.html',
+          pageParam: {
+              artid: id,//或者用frameNumber也可以
+              index:1
+          }
+      });
+    }
+</script>
+</html>

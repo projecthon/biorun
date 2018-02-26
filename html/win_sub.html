@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+      <style>
+            body{background-color:#fff;}
+      </style>
+  </head>
+  <body>
+    <header class="aui-bar aui-bar-nav">
+      <div onclick="api.closeWin();" class="aui-pull-left aui-btn">
+        <span class="aui-iconfont aui-icon-left"></span>返回
+      </div>
+      <div class="aui-title">关键词订阅</div>
+    </header>
+      <ul class="aui-list aui-form-list" style="margin-top:40px">
+          <li class="aui-list-item">
+              <div class="aui-list-item-inner">
+                  <div class="aui-list-item-label aui-border-r color-orange">
+                      领域
+                  </div>
+                  <div class="aui-list-item-input aui-padded-l-10">
+                      <input onclick="openField();" placeholder="请输入领域" readonly="readonly" id="field" >
+                  </div>
+              </div>
+          </li>
+          <li class="aui-list-item">
+              <div class="aui-list-item-inner">
+                  <div class="aui-list-item-label aui-border-r color-orange">
+                      影响因子
+                  </div>
+                  <div class="aui-list-item-input aui-padded-l-10">
+                      <input onclick="openInfect();" placeholder="请输入影响因子" readonly="readonly" id="infect" >
+                  </div>
+              </div>
+          </li>
+          <li class="aui-list-item">
+              <div class="aui-list-item-inner">
+                  <div class="aui-list-item-label aui-border-r color-orange">
+                      关键字
+                  </div>
+                  <div class="aui-list-item-input aui-padded-l-10">
+                      <input type='text' placeholder="请输入关键字" id="keyword" >
+                  </div>
+              </div>
+          </li>
+      </ul>
+
+      <section class="aui-content-padded">
+          <div  id='btn1' onclick="addSubscribe();" class="aui-btn aui-btn-block aui-btn-info aui-btn-sm" tapmode>订阅</div>
+      </section>
+  </body>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript">
+      apiready = function(){
+        initFrame();
+        initField();
+      };
+
+      function initFrame(){
+        var btnPos = $api.offset($api.byId('btn1'));
+        var btnBottom = btnPos.t+btnPos.h;
+        var frameH = api.winHeight - btnBottom;
+        api.openFrame({
+            name: 'subfrm',
+            url: './frm_sub.html',
+            rect: {
+                x: 0,
+                y: btnBottom,
+                w: 'auto',
+                h: frameH
+            },
+            pageParam: {
+                name: 'test'
+            },
+            bounces: false,
+            bgColor: 'rgba(0,0,0,0)',
+            vScrollBarEnabled: false,
+            hScrollBarEnabled: true
+        });
+      }
+
+      function initField(){
+        if(typeof($api.getStorage('field'))=='undefined'){
+            api.ajax({
+                url: 'http://www.ftracker.cn/appserver/index.php/Home/Fourth/initField',
+                method: 'post',
+                data: {
+                    values: { name: 'haha'}
+                }
+            },function(ret, err){
+                if (ret) {
+                    //将领域放到selector面板上面
+                    $api.setStorage('field', ret);
+                } else {
+                    alert( JSON.stringify( err ) );
+                }
+            });
+        }
+      }
+
+      function openInfect(){
+        var UIActionSelector = api.require('UIActionSelector');
+        var items = 'widget://res/infect.json';
+        UIActionSelector.open({
+           datas: items,
+           layout: {
+               row: 5,
+               col: 1,
+               height: 30,
+               size: 12,
+               sizeActive: 14,
+               rowSpacing: 5,
+               colSpacing: 10,
+               maskBg: 'rgba(0,0,0,0.2)',
+               bg: '#fff',
+               color: '#888',
+               colorActive: '#f00',
+               colorSelected: '#f00'
+           },
+           animation: true,
+           cancel: {
+               text: '取消',
+               size: 12,
+               w: 90,
+               h: 35,
+               bg: '#fff',
+               bgActive: '#ccc',
+               color: '#888',
+               colorActive: '#fff'
+           },
+           ok: {
+               text: '确定',
+               size: 12,
+               w: 90,
+               h: 35,
+               bg: '#fff',
+               bgActive: '#ccc',
+               color: '#888',
+               colorActive: '#fff'
+           },
+           title: {
+               text: '请选择影响因子',
+               size: 12,
+               h: 44,
+               bg: '#eee',
+               color: '#888'
+           },
+       }, function(ret, err) {
+           if (ret) {
+             if(ret.eventType == 'ok'){
+                $api.val($api.byId('infect'),ret.level1);
+                $api.byId('keyword').focus();
+             }
+           } else {
+               alert(JSON.stringify(err));
+           }
+       });
+      }
+
+      function openField(){
+          var UIActionSelector = api.require('UIActionSelector');
+          var field = $api.getStorage('field');
+          var items = [];
+          items.push({name:'All Field'});
+          for (var prop in field) {
+            var item = {name:field[prop].description};
+            items.push(item);
+          }
+
+        UIActionSelector.open({
+            datas: items,
+            layout: {
+                row: 5,
+                col: 1,
+                height: 30,
+                size: 12,
+                sizeActive: 14,
+                rowSpacing: 5,
+                colSpacing: 10,
+                maskBg: 'rgba(0,0,0,0.2)',
+                bg: '#fff',
+                color: '#888',
+                colorActive: '#f00',
+                colorSelected: '#f00'
+            },
+            animation: true,
+            cancel: {
+                text: '取消',
+                size: 12,
+                w: 90,
+                h: 35,
+                bg: '#fff',
+                bgActive: '#ccc',
+                color: '#888',
+                colorActive: '#fff'
+            },
+            ok: {
+                text: '确定',
+                size: 12,
+                w: 90,
+                h: 35,
+                bg: '#fff',
+                bgActive: '#ccc',
+                color: '#888',
+                colorActive: '#fff'
+            },
+            title: {
+                text: '请选择领域',
+                size: 12,
+                h: 44,
+                bg: '#eee',
+                color: '#888'
+            },
+        }, function(ret, err) {
+            if (ret) {
+              if(ret.eventType == 'ok'){
+                  $api.val($api.byId('field'),ret.level1);
+                  $api.byId('infect').focus();
+              }
+            } else {
+                alert(JSON.stringify(err));
+            }
+        });
+      }
+
+    function addSubscribe(){
+      //获取领域，因子，关键字
+      var field = $api.val($api.byId('field'));
+      var infect = $api.val($api.byId('infect'));
+      var keyword = $api.val($api.byId('keyword'));
+      //判断是不是空，
+      if(field == ''){
+        api.toast({
+            msg: '请选择领域',
+            duration: 2000,
+            location: 'bottom'
+        });
+        return;
+      }
+      if(infect == '') {
+        api.toast({
+            msg: '请选择影响因子',
+            duration: 2000,
+            location: 'bottom'
+        });
+        return;
+      }
+      api.ajax({
+          url: 'http://www.ftracker.cn/appserver/index.php/Home/Fourth/addSub',
+          method: 'post',
+          data: {
+              values: {
+                  uid:$api.getStorage('uid'),
+                  field:field,
+                  infect:infect.substr(2),
+                  keyword:keyword.trim()
+              }
+          }
+      },function(ret, err){
+          if (ret) {
+              //
+              if(ret.status == 1){
+                //已经存在该领域的订阅了
+                api.toast({
+                    msg: '订阅重复了',
+                    duration: 2000,
+                    location: 'bottom'
+                });
+              } else if(ret.status == 2) {
+                //添加成功
+                var onesub = infect.substr(2)+','+field;
+                if(keyword.trim()!='')
+                  onesub = onesub+','+keyword.trim();
+                $api.setStorage('onesub', onesub);
+                //console.log(onesub);
+                api.execScript({
+                    name: 'subwin',
+                    frameName: 'subfrm',
+                    script: 'fnAddSub();'
+                });
+              } else {
+                //失败
+                api.toast({
+                    msg: '订阅失败',
+                    duration: 2000,
+                    location: 'bottom'
+                });
+              }
+              //console.log( JSON.stringify( ret ) );
+          } else {
+              alert( JSON.stringify( err ) );
+          }
+      });
+    }
+  </script>
+  </html>

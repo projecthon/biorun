@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+      <style>
+          body{width:100%;font-size: 15px;background:#fff;}
+          .content,.userpanel,.userpanel2{padding-left:1em;padding-right:1em;width:100%;overflow-x: hidden;}
+          p{text-indent:2em;color:#222;}
+          small{font-size:0.5rem;}
+          textarea {height: 3rem;background-color: #ffffff;
+          padding: 0.5rem;margin-top:5px;margin-bottom:5px;border: 1px solid #ccc;
+          }
+          .userpanel2 p{text-indent: 0;margin:5px 0;}
+          .hide{display:none;}
+          u{margin:0 5px;}
+          .addtagbtn{background-color: #009688;color:#fff;border-radius: 3px;padding: 0 7px;margin-left: 10px;}
+          li{/*display: inline;*/
+      			width:30px;height:30px;background: url(../image/wjx.png);background-size: 30px 30px;
+      			font-size: 20px;font-weight: 900;cursor: pointer;float:left;margin-right:10px;}
+      		.beSelect{background: url(../image/wjx1.png);}
+          .edit-tag{width:80px;height:22px;position:relative;margin-left:15px;
+          color: #fff;background-color: #03a9f4;background-repeat: no-repeat;
+          text-align: center;border-radius: 3px;}
+        .content p{
+          -webkit-user-select: all;
+                  user-select: all;
+        }
+        .userpanel2 textarea{
+          -webkit-user-select: all;
+                  user-select: all;
+        }
+      </style>
+  </head>
+  <body>
+    <div class="content" id='content'>
+
+    </div>
+    <div class="" style="height:10px;"></div>
+
+    <div class="userpanel2 hide" id="userpanel2">
+      <p>
+        <span style='color:red;'>所在文件夹:</span><span><u onclick="openSelector2();" id='myfolder' href="#">xxx</u></span>
+      </p>
+      <p>
+        <span style='color:red;'>标签：</span>
+        <span id="mytags">
+          <span id="mytag"></span>
+          <span onclick="fnAddTag();" class='addtagbtn'>添加标签</span><span onclick="fnOpenTag();" class="edit-tag">编辑标签</span>
+      </p>
+      <p>
+        <span style='color:red;float:left;height:30px;line-height:30px;'>等级：</span>
+        <span style="float:left;">
+          <ul class='myul' style="float:left;">
+        		<li class='li' param='1' onclick="fnStar(this);"></li>
+        		<li class='li' param='2' onclick="fnStar(this);"></li>
+        		<li class='li' param='3' onclick="fnStar(this);"></li>
+        		<li class='li' param='4' onclick="fnStar(this);"></li>
+        		<li class='li' param='5' onclick="fnStar(this);"></li>
+        	</ul>
+        </span>
+      </p>
+      <p style="clear:both;"></p>
+      <p style="">
+
+        <div><span style='color:red;line-height:30px;'>我的笔记：</span><u id="mynote" onclick="openTextarea();" style="color:#ccc;line-height:30px;"></u></div>
+      </p>
+      <p>
+        <textarea class="hide" id="notearea" name="name" placeholder="在这里输入笔记..."></textarea>
+      </p>
+      <p>
+        <div onclick="saveEdit();" class="aui-btn aui-btn-block aui-btn-danger aui-btn-sm" style="margin:5px auto;width:90%;">保存编辑</div>
+      </p>
+
+    </div>
+
+    <div class="aui-btn" onclick="openBox();">share_page</div>
+
+    <div class="" style="height:30px;"></div>
+  </body>
+  <script type="text/template" id='template1'>
+      <!--  -->
+        <p id="art-title" class='title' style="readonly:readonly;border:none;">{{=it.title}}</p>
+
+      <small>
+        {{=it.author}}
+      </small>
+
+      <p id="art-abstract" class='title' style="readonly:readonly;border:none;">{{=it.abstract}}</p>
+
+      <p id="art-abstract_zh" class='title' style="readonly:readonly;border:none;">{{=it.abstract_zh}}</p>
+
+  </script>
+
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript" src="../script/doT.min.js"></script>
+  <script type="text/javascript">
+      apiready = function(){
+        dialogBox = api.require('dialogBox');
+        initArt();
+        qq = api.require("QQPlus");
+        wx = api.require('wx');
+      };
+      var usertags = [];
+      var nowbiggest = 0;
+      var dialogBox;
+      var artId;
+      var artTT;
+      var qq;
+      var wx;
+      function openBox(){
+        dialogBox.actionMenu({
+            rect: {
+                h: 200
+            },
+            texts: {
+                cancel: '取消'
+            },
+            items: [{
+                text: '微信朋友圈',
+                icon: 'widget://image/shouye/wk.png'
+            }, {
+                text: '微信好友',
+                icon: 'widget://image/shouye/wx.png'
+            },{
+                text: 'QQ好友',
+                icon: 'widget://image/shouye/qq.png'
+            }, {
+                text: 'QQ空间',
+                icon: 'widget://image/shouye/qk.png'
+            }, {
+                text: '微博',
+                icon: 'widget://image/shouye/wb.png'
+            },  {
+                text: '支付宝',
+                icon: 'widget://image/shouye/zfb.png'
+            }],
+
+            styles: {
+                bg: '#f4f4f4',
+                corner: 6,
+                column: 4,
+                itemText: {
+                    color: '#888',
+                    size: 10,
+                    marginT: 9
+                },
+                itemIcon: {
+                    size: 60
+                },
+                cancel: {
+                    bg: '#f8f8f8',
+                    color: '#222',
+                    h: 48,
+                    size: 16
+                }
+            },
+            tapClose: true
+        }, function(ret) {
+          if(ret.eventType == 'click'){
+            shareArt(ret.index,artId);
+          }
+          dialogBox.close();
+        });
+      }
+
+      function shareArt(index,artid){
+        var x = 'QFriend';
+        if (index == 3) { x = 'QZone';}
+
+        var y = 'session';
+        if (index == 0) { y = 'timeline';}
+        switch (index) {
+          case 0:
+            //朋友圈
+          case 1:
+            //微信好友
+            wx.shareWebpage({
+                scene: y,
+                title: artTT,
+                description: '这里可以写一段描述',
+                thumb: 'widget://image/ft-app.png',
+                contentUrl: 'http://www.ftracker.cn/index.php?s=/Home/Index/content/id/'+artid
+            }, function(ret, err) {
+                if (ret.status) {
+                    alert('分享成功');
+                } else {
+                    alert(err.code);
+                }
+            });
+            break;
+          case 2:
+            //qq好友
+          case 3:
+            //qq空间
+            qq.shareNews({
+                url: 'http://www.ftracker.cn/index.php?s=/Home/Index/content/id/'+artid,
+                title: 'ftrack',
+                description: artTT,
+                type:x,
+                imgUrl: 'http://www.ftracker.cn/ManPhoto/ft-app.png'
+            },function(ret,err){
+              if (ret.status){
+                alert("分享成功！");
+              } else {
+                //终止分享的时候，不要显示错误信息。。。
+                //api.alert({msg: JSON.stringify(err)});
+              }
+            });
+            break;
+          default:
+
+        }
+      }
+
+      function fnAddTag(){
+        var alltagstr = usertags['customize'];
+        if(alltagstr!=null && alltagstr!=''){
+          var alltagarr = alltagstr.split('|');
+          var items = [];
+          for (var val in alltagarr) {
+            items.push({name:alltagarr[val]});
+          }
+          //console.log(JSON.stringify(items));
+          //我需要在这里来处理这些tags
+          var UIActionSelector = api.require('UIActionSelector');
+          UIActionSelector.open({
+              datas: items,
+              layout: {
+                  row: 5,
+                  col: 1,
+                  height: 30,
+                  size: 12,
+                  sizeActive: 14,
+                  rowSpacing: 5,
+                  colSpacing: 10,
+                  maskBg: 'rgba(0,0,0,0.2)',
+                  bg: '#fff',
+                  color: '#888',
+                  colorActive: '#f00',
+                  colorSelected: '#f00'
+              },
+              animation: true,
+              cancel: {
+                  text: '取消',
+                  size: 12,
+                  w: 90,
+                  h: 35,
+                  bg: '#fff',
+                  bgActive: '#ccc',
+                  color: '#888',
+                  colorActive: '#fff'
+              },
+              ok: {
+                  text: '确定',
+                  size: 12,
+                  w: 90,
+                  h: 35,
+                  bg: '#fff',
+                  bgActive: '#ccc',
+                  color: '#888',
+                  colorActive: '#fff'
+              },
+              title: {
+                  text: '请选择',
+                  size: 12,
+                  h: 44,
+                  bg: '#eee',
+                  color: '#888'
+              },
+              fixedOn: api.frameName
+          }, function(ret, err) {
+              if (ret) {
+                //{"selectedInfo":[{"name":"123222"}],"level1":"123222","eventType":"ok"}
+                if(ret.eventType == 'ok'){
+                  //这里要判断dom里面所有的tag，不能重复
+                  var nowTag = $api.domAll($api.byId('mytags'),'u');
+                  if(nowTag.length){
+                    for (var i = 0; i < nowTag.length; i++) {
+                      var text = $api.html(nowTag[i]);
+                      if(text == ret.level1){
+                        api.toast({
+                            msg: '标签已经存在',
+                            duration: 2000,
+                            location: 'bottom'
+                        });
+                        return;
+                      }
+                    }
+                  }
+                  $api.after($api.byId('mytag'), "<u onclick='fnDelTag(this)'>"+ret.level1+"</u>");
+
+                }
+              } else {
+                console.log(JSON.stringify(err));
+              }
+          });
+        } else{
+          api.toast({
+              msg: '你还没有标签',
+              duration: 2000,
+              location: 'bottom'
+          });
+        }
+      }
+
+      function fnDelTag(me){
+        $api.remove(me);
+      }
+
+      function openSelector2(){
+        api.openFrame({
+            name: 'dirselector2',
+            url: './frm_dirSelector2.html',
+            rect: {
+                x: 0,
+                y: 0,
+                w: 'auto',
+                h: 'auto'
+            },
+            pageParam: {
+                name: 'test'
+            },
+            bounces: false,
+            bgColor: 'rgba(0,0,0,0.5)',
+            vScrollBarEnabled: true,
+            hScrollBarEnabled: true
+        });
+
+      }
+
+      function updateFolder(){
+        var folder = $api.getStorage('folder');
+        $api.html($api.byId('myfolder'),folder.fname);
+      }
+
+      function openTextarea(){
+        $api.toggleCls($api.byId('notearea'), 'hide');
+      }
+
+      function initStar(){
+        if(nowbiggest==0)
+    			return;
+        var ul = $api.dom('.myul');
+    		for (var i = 1; i <= nowbiggest; i++) {
+          $api.css($api.eq(ul, i),'background-image:url(../image/wjx1.png)');
+    		}
+      }
+
+      function fnStar(me){
+        var nowIDX = $api.attr(me,'param');
+        var ul = $api.dom('.myul');
+        if(nowIDX == nowbiggest){
+          $api.css($api.eq(ul,nowIDX),'background-image:url(../image/wjx.png)');
+          nowbiggest = nowbiggest-1;
+        } else {
+          for (var i = 1; i <= 5; i++) {
+            $api.css($api.eq(ul, i),'background-image:url(../image/wjx.png)');
+          }
+      		for (var i = 1; i <= nowIDX; i++) {
+      		  $api.css($api.eq(ul, i),'background-image:url(../image/wjx1.png)');
+      		}
+          nowbiggest = nowIDX;
+        }
+    	}
+
+      function initArt(){
+        var param = {artid:api.pageParam['artid'],userid:$api.getStorage('uid')};
+        api.showProgress({
+            style: 'default',
+            animationType: 'fade',
+            title: '努力加载中...',
+            text: '先喝杯茶...',
+            modal: false
+        });
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/First/InitDetail',
+            method: 'post',
+            data: {
+                values: param
+            }
+        },function(ret, err){
+            if (ret) {
+              var art = ret;
+              usertags = ret['tags'];
+              //设置环境变量
+              $api.setStorage('title_zh', art['content'].title_zh);
+              $api.setStorage('is_collect', art['content'].is_collect);
+              api.execScript({
+                  name: 'detail',
+                  script: "setTitleAndBtn();"
+              });
+              //渲染文章
+              var tempFn = doT.template($api.byId('template1').innerHTML);
+              var art_str = tempFn(art['content']);
+              $api.html($api.byId('content'),art_str);
+              var title = document.getElementById('art-title');
+              artId = art['content'].id;
+              artTT = art['content'].title;
+              if(art['content'].is_collect=='true'){ //当已经收藏时，初始化userpanel2面板
+                $api.setStorage('collectid', art['userdata'].id);
+                //console.log(art['userdata'].id);
+                //初始化标签
+                if(art['userdata'].tag!=null && art['userdata'].tag!=''){
+                  var tags = (art['userdata'].tag).split(",");
+                  var domtag = $api.byId('mytag');
+                  for (var i = 0; i < tags.length; i++) {
+                      $api.after(domtag,"<u onclick='fnDelTag(this);'>"+tags[i]+"</u>");
+                  }
+                } else {
+                  $api.after($api.byId('mytag'),"");
+                }
+                //初始化文件夹
+                //这里要改一下，，，，当用户的folderid==0的时候，是查不到folder的
+                if(art['userdata'].folder != null && art['userdata'].folder != ''){
+                  $api.html($api.byId('myfolder'),art['userdata'].folder);
+                  var tmp = {fname:art['userdata'].folder,'fid':art['userdata'].folderid};
+                  $api.setStorage('folder',tmp);
+                } else {
+                  $api.html($api.byId('myfolder'),'不存在的文件夹');
+                }
+                //初始化笔记
+                if(art['userdata'].note != null && art['userdata'].note != ''){
+                  $api.html($api.byId('mynote'),art['userdata'].note);
+                  $api.val($api.byId('notearea'),art['userdata'].note);
+                } else {
+                  $api.html($api.byId('mynote'),'添加笔记');
+                  $api.attr($api.byId('notearea'),'placeholder','添加笔记');
+                }
+                //初始化等级
+                nowbiggest = art['userdata'].level;
+                initStar();
+                $api.removeCls($api.byId('userpanel2'), 'hide');
+              }
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+            api.hideProgress();
+        });
+      }
+
+      function saveEdit(){
+        //这里来处理表单的数据,首先是获取表单的数据
+        var nowTag = $api.domAll($api.byId('mytags'),'u');
+        var artTag = '';
+        if(nowTag.length){
+          for (var i = 0; i < nowTag.length; i++) {
+            if(i == 0) {
+              artTag = $api.html(nowTag[i]);
+            } else {
+              artTag = artTag+','+ $api.html(nowTag[i]);
+            }
+          }
+        }
+        var tmp = $api.getStorage('folder');
+        //这里还需要这篇收藏过的id,
+        var collectID = $api.getStorage('collectid');
+        var note = $api.val($api.byId('notearea'));
+        if (note == '' || note == null) {
+           api.toast({
+               msg: '笔记不能为空',
+               duration: 2000,
+               location: 'bottom'
+           });
+           return;
+        }
+        var param = {id:collectID,userid:$api.getStorage('uid'),fid:tmp.fid,tag:artTag,level:nowbiggest,note:note};
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/First/saveEdit',
+            method: 'post',
+            data: {
+                values:param
+            }
+        },function(ret, err){
+            if (ret) {
+
+                if(ret.status == 1){
+                  $api.html($api.byId('mynote'), param.note);
+                  $api.addCls($api.byId('notearea'), 'hide');
+                  api.toast({
+                      msg: '保存成功',
+                      duration: 2000,
+                      location: 'bottom'
+                  });
+                } else{
+                  api.toast({
+                      msg: '保存成功',
+                      duration: 2000,
+                      location: 'bottom'
+                  });
+
+                }
+
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+        });
+
+      }
+
+      function displayPanelAndFolder(){
+        //重设文件夹
+        var folder = $api.getStorage('folder');
+        $api.html($api.byId('myfolder'),folder.fname);
+        //重设标签
+        var foo = "<span id='mytag'></span><span onclick='fnAddTag();' class='addtagbtn'>+</span>";
+        $api.html($api.byId('mytags'), foo);
+        //重设等级
+        var ul = $api.dom('.myul');
+    		for (var i = 1; i <= 5; i++) {
+          $api.css($api.eq(ul, i),'background-image:url(../image/wjx.png)');
+    		}
+        $api.css($api.eq(ul,1),'background-image:url(../image/wjx1.png)');
+        //重设笔记
+        $api.html($api.byId('mynote'),'添加笔记');
+        $api.attr($api.byId('notearea'),'placeholder','添加笔记');
+        //console.log(JSON.stringify(folder));
+        rmHide();
+      }
+
+      function fnOpenTag(){
+        api.openWin({
+            name: 'userTag',
+            url: './win_edittag2.html',
+            pageParam: {
+                name: 'test'
+            }
+        });
+      }
+
+      function addHide(){
+        $api.addCls($api.byId('userpanel2'), 'hide');
+      }
+
+      function rmHide(){
+        $api.removeCls($api.byId('userpanel2'), 'hide');
+      }
+  </script>
+  </html>

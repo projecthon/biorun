@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+      <style>
+          html,body{
+            background-color:#fff;height: 100%;
+          }
+          .head{
+            width: 100%;height: 40px;line-height: 40px;
+            background-color: #03a9f4;text-align: center;
+          	color: #ffffff;
+          }
+      </style>
+  </head>
+  <body>
+  <div class="head" id="head">
+    <div class="title">
+      周杰伦<i class="aui-iconfont aui-icon-paper" onclick="openSomePage();" style="margin-left:20px;"></i>
+    </div>
+  </div>
+
+  <section class="aui-chat" id="chat-list" style="overflow-y: scroll;">
+      <div class="aui-chat-header">2018年2月24日</div>
+      <!-- <div class="aui-chat-item aui-chat-left">
+          <div class="aui-chat-media">
+              <img src="../image/profile_default.png" />
+          </div>
+          <div class="aui-chat-inner">
+              <div class="aui-chat-name">张三</div>
+              <div class="aui-chat-content">
+                  <div class="aui-chat-arrow"></div>
+                  Hello 你好
+              </div>
+              <div class="aui-chat-status aui-chat-status-refresh">
+                  <i class="aui-iconfont aui-icon-correct aui-text-success"></i>
+              </div>
+          </div>
+      </div>
+      <div class="aui-chat-item aui-chat-right">
+          <div class="aui-chat-media">
+              <img src="../image/f3.jpg" />
+          </div>
+          <div class="aui-chat-inner">
+              <div class="aui-chat-name">周杰伦</div>
+              <div class="aui-chat-content">
+                  <div class="aui-chat-arrow"></div>
+                  你好！
+              </div>
+              <div class="aui-chat-status">
+                  <i class="aui-iconfont aui-icon-info aui-text-danger"></i>
+              </div>
+          </div>
+      </div> -->
+  </section>
+
+  </body>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript" src="../script/doT.min.js"></script>
+  <script type="text/template" id="tmp1">
+
+  </script>
+  <script type="text/javascript">
+      apiready = function(){
+          initData();
+          initUI();
+          //初始化rongcloud , IM
+          rong = api.require('rongCloud2');
+          UIChatTools = api.require('UIChatTools');
+          chatTools();//----这一行是开启聊天功能，
+          rongyun();  //----接入融云
+          initEvent(); //----这一行是 api 监听 rongyun发出的事件。。。
+
+      };
+
+function initEvent(){
+  //监听发送消息
+  api.addEventListener({
+      name: 'sendMsg'
+  }, function(ret, err) {
+      // 发送消息后, 添加消息内容到页面
+      //console.log('你发送的消息(我还是监听过来的呢)内容是：'+ret.value.msg);
+      var html = '<div class="aui-chat-item aui-chat-left"><div class="aui-chat-media"><img src="'+$api.getStorage('picture')+'" /></div><div class="aui-chat-inner"><div class="aui-chat-name">'+$api.getStorage('nickname')+'</div><div class="aui-chat-content"><div class="aui-chat-arrow"></div>'+ret.value.msg+'</div><div class="aui-chat-status aui-chat-status-refresh"></div></div></div>';
+      $api.append($api.byId('chat-list'), html);
+
+  });
+  //监听接受消息
+  api.addEventListener({
+      name: 'receiveMsg'
+  }, function(ret, err) {
+      // 收到消息后, 添加消息内容到页面
+      //console.log('收到了一条消息（我又是监听来的）呢内容是：'+ret.value.msg);
+      var html = '<div class="aui-chat-item aui-chat-right"><div class="aui-chat-media"><img src="http://www.ftracker.cn/ManPhoto/ftrack_'+ret.value.fromid+'.jpg" /></div><div class="aui-chat-inner"><div class="aui-chat-name">周杰伦</div><div class="aui-chat-content"><div class="aui-chat-arrow"></div>'+ret.value.msg+'</div><div class="aui-chat-status"></div></div>';
+      $api.append($api.byId('chat-list'), html);
+  });
+}
+
+function initData(){
+  var u = $api.getStorage('uid');
+  console.log(u);return;
+  user = {}; //获得用户信息
+  friend = {}; //获得该好友信息
+}
+function initUI(){
+  var headPos = $api.offset($api.byId('head'));
+  var chatList = $api.byId('chat-list');
+  var h = api.winHeight - headPos.h-60;
+  chatList.style.height = h+"px";
+}
+function openSomePage(){
+  //这个要传入参数，1打开homepage。2打开partpage。
+  var pagetype = api.pageParam.pagetype;
+  var iname = 'homepage';
+  var iurl = './win_homepage.html';
+  if (pagetype == 2) {
+    iname = 'partpage';
+    iurl = './win_partpage.html';
+  }
+  api.openWin({
+      name: iname,
+      url: iurl,
+      pageParam: {
+          name: 'test'
+      }
+  });
+}
+
+function chatTools() {
+  UIChatTools.open({
+    chatBox: {
+        placeholder: '聊天内容',
+        autoFocuse: true,
+        maxRows: 6
+    },
+    styles: {
+        bgColor: '#D1D1D1',
+        margin: 10,
+    },
+    tools: {
+        h: 35,
+        iconSize: 30,
+        recorder: {
+            normal: 'fs://UIChatTolls/recorder.png',
+            selected: 'fs://UIChatTolls/recorder1.png'
+        },
+        image: {
+            normal: 'fs://UIChatTolls/image.png',
+            selected: 'fs://UIChatTolls/image1.png'
+        },
+        video: {
+            normal: 'fs://UIChatTolls/video.png',
+            selected: 'fs://UIChatTolls/video1.png'
+        },
+        face: {
+            normal: 'fs://UIChatTolls/face2.png',
+            selected: 'fs://UIChatTolls/face1.png'
+        },
+        append: {
+            normal: 'fs://UIChatTolls/append.png',
+            selected: 'fs://UIChatTolls/append1.png'
+        }
+    },
+    // 表情
+    // emotions:['widget://image/chatPage/emoticons/basic','widget://image/chatPage/emoticons/append1','widget://image/chatPage/emoticons/append2']
+}, function(ret) {
+    if (ret) {
+        if (ret.eventType === 'send') {
+            // 发送消息 --------------------------------------发送按钮一按，就调用 融云的 sendtextmessage方法了。
+            sendMsg(ret.msg);
+        }
+    }
+});
+// 附加按钮
+UIChatTools.setAppendButton({
+    styles: {
+        row: 2,
+        column: 4,
+        iconSize: 50,
+        titleSize: 13,
+        titleColor: '#f00'
+    },
+    buttons: [
+        {
+            normal: 'widget://image/chatPage/album2.png',
+            highlight: 'widget://image/chatPage/album2.png',
+            title: '电话'
+        },{
+            normal: 'widget://image/chatPage/album2.png',
+            highlight: 'widget://image/chatPage/album2.png',
+            title: '收藏'
+        },{
+            normal: 'widget://image/chatPage/album2.png',
+            highlight: 'widget://image/chatPage/album2.png',
+            title: '发红包'
+        }
+    ]
+}, function(ret) {
+    api.alert({msg:'点击了第'+ret.index+'个按钮'});
+});
+// 监听功能按钮
+UIChatTools.toolsListener(function(ret) {
+    if (ret.eventType == 'video') {
+        api.alert({
+            title: 'title',
+            msg: 'video',
+        }, function(ret, err) {
+            if (ret) {
+                alert(JSON.stringify(ret));
+            } else {
+                alert(JSON.stringify(err));
+            }
+        });
+    }
+});
+}
+
+// 接入融云
+function rongyun () {
+    //点击sendBtn 调用  rong's发送消息
+    // 初始化rongyun 调用  rong's接收消息
+    rong.init(function(ret, err) {
+        if (ret.status == 'error')
+            api.toast({ msg: err.code });
+    });
+    // 监听接收消息
+    receiveMsg(); //融云监听接受，然后发送去新的事件，
+    //但是融云不需要监听发送事件（因为发送本来是他主动完成的），然后发送新的事件
+    var token = $api.getStorage('token');
+    rong.connect(
+        {
+            token: token
+        },function(ret, err) {
+            if (ret.status == 'success'){
+              console.log("通过token我知道你的id："+ret.result.userId);
+              //api.toast({ msg: })
+            }
+        });
+
+}
+
+// 监听接收消息
+function receiveMsg() {
+   rong.setOnReceiveMessageListener(function(ret, err) {//----------------------
+      // 由于聊天框界面和聊天内容不是一个页面所以要使用事件监听的方式通知聊天内容页面，传递参数
+      if(ret){
+        console.log("接受一条消失成功："+JSON.stringify(ret));
+      }
+      if (err) {
+        console.log("接受消失失败:"+JSON.stringify(err));
+      }
+      api.sendEvent({
+          name: 'receiveMsg',
+          extra: {
+              msg: ret.result.message.content.text,
+              fromid:ret.result.message.senderUserId
+          }
+      });
+    })
+}
+
+//发送消息
+function sendMsg(msg) {
+  var sendMsg;
+  var tid = 3;
+  if ($api.getStorage('uid')==3) {
+    tid = 28;
+  }
+  rong.sendTextMessage({                               //----------------------
+      conversationType: 'PRIVATE',
+      targetId: tid,//发消息需要确定发送的对象，
+      text: msg,
+      extra: ''
+  }, function(ret, err) {
+      if (ret.status == 'prepare') {
+        // 获取发送的消息内容
+        console.log("先获取发送数据的格式："+JSON.stringify(ret.result));
+        sendMsg = ret.result.message.content.text;
+      }
+
+      else if (ret.status == 'success') {
+          // 广播发送消息事件
+          api.sendEvent({
+              name: 'sendMsg',
+              extra: {
+                  msg: sendMsg
+              }
+          });
+      }
+      else if (ret.status == 'error') {
+          api.alert({
+              title: 'title',
+              msg: err.code,
+          }, function(ret, err) {
+              if (ret) {
+                  alert(JSON.stringify(ret));
+              } else {
+                  alert(JSON.stringify(err));
+              }
+          });
+      }
+  });
+}
+
+
+  </script>
+  </html>

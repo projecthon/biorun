@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+      <style>
+      body{
+        width:100%;
+      }
+      li{border-bottom: 1px solid #ccc;}
+      </style>
+  </head>
+  <body id="body">
+    <header id='head' class="aui-bar aui-bar-nav">
+            <div class="aui-pull-left aui-btn" onclick="api.closeWin();">
+                <span class="aui-iconfont aui-icon-left"></span>返回
+            </div>
+            <div class="aui-title">杂志订阅</div>
+        </header>
+    <div class="" style="height:50px;"></div>
+
+    <ul id='taglist' class="aui-list aui-list-in">
+      <li class="aui-list-header" >
+          已经订阅          <!-- -->
+      </li>
+      <div id="subed-list">
+      </div>
+    </ul>
+
+    <ul class="aui-list aui-list-in" style="margin-top:4px;">
+      <li class="aui-list-header" >
+          搜索订阅
+      </li>
+    <li class="aui-list-item" style="margin-top:4px;border-top:1px solid #ddd;">
+      <div class="aui-list-item-inner">
+          <div class="aui-list-item-title"><input style="background-color:#ccc;height:28px;border-radius: 3px;" type="text" placeholder="杂志名称" id="search-input" value=""></div>
+          <div class="aui-list-item-right">
+              <div onclick="searchJournal();" class="aui-label aui-label-danger">搜索</div>
+          </div>
+      </div>
+    </li>
+    </ul>
+
+    <p style="height:4px;background-color:#ddd;"></p>
+    <ul id='subing-list' class="aui-list aui-list-in" style="margin-bottom:50px;">
+      <p></p>
+    </ul>
+  </body>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript">
+      apiready = function(){
+          initMyJournal();
+          api.addEventListener({
+              name:'scrolltobottom',
+              extra:{
+                  threshold:0            //设置距离底部多少距离时触发，默认值为0，数字类型
+              }
+          }, function(ret, err){
+            //如果最后一条显示没有数据了，就别再显示了
+              var html = $api.html($api.last($api.byId('subing-list')));
+              //console.log(html);
+              if(html == "没有数据了!"){
+                return;
+              }
+              displayApart(start);
+          });
+      };
+      var oldCondition = "";
+      var start = 0;var searchdata = [];
+      function initMyJournal(){
+        //获取用户journal，显示在ul下面
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Seventh/Initsub2',
+            method: 'post',
+            data: {
+                values: {
+                    uid: $api.getStorage('uid')
+                }
+            }
+        },function(ret, err){
+            if (ret) {
+                //console.log(JSON.stringify( ret ) );
+                // add dom, and api byid html  li onclick=delJournal(j_id)
+                var html = "";
+                for (var val in ret) {
+                  var str = ret[val];
+                  if(str.length>36){
+                    str = str.substr(0,36)+"...";
+                  }
+                  html +="<li class='aui-list-item'><div class='aui-list-item-inner'><div param='"+ret[val]+"' class='aui-list-item-title'>"+str+"</div><div class='aui-list-item-right'><div onclick='delJournal(this);' class='aui-label aui-label-success'>取消</div></div></div></li>";
+                }
+                $api.append($api.byId('subed-list'), html);
+
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+        });
+
+      }
+
+      function searchJournal(){
+        //byid input values  trim "",
+        //查找的数据放到一个变量里面，显示一部分出来，
+        //到达底部，触发显示事件。
+        //那么我需要两个全局变量，一个 start，一个，searchdata，每次搜索更新start和searchdata
+        //每次底部触发事件，也要更新着两个变量
+        var param = {condition:$api.val($api.byId('search-input'))};
+        //如果输入为空，就别让他查找了
+        if((param.condition).trim()=="" || param.condition == oldCondition){
+          return;
+        }
+        oldCondition = param.condition;
+        api.ajax({
+          url: 'http://www.ftracker.cn/appserver/index.php/Home/Seventh/getJournal',
+            method: 'post',
+            data: {
+                values: param
+            }
+        },function(ret, err){
+            if (ret) {
+                //console.log( JSON.stringify( ret ) );
+                start = 0; searchdata = ret;
+                //console.log(ret.length);
+                displayApart(start);
+            } else {
+                console.log( JSON.stringify( err ) );
+            }
+        });
+
+      }
+
+      function displayApart(st){
+        //判断 st 的值，是不是0，是0就html，不是0，就append
+        if(searchdata.length==0){
+          //这里要告诉用户没数据了
+          return;
+        }
+          var html = "";
+        if(searchdata.length>st+10){
+          for (var i = st; i < st+10; i++) {
+            //处理searchdata 的
+            var str = searchdata[i];
+            if(str.length>36){
+              str = str.substr(0,33)+"...";
+            }
+            html +="<li class='aui-list-item'><div class='aui-list-item-inner'><div param='"+searchdata[i]+"' class='aui-list-item-title'>"+str+"</div><div class='aui-list-item-right'><div onclick='addJournal(this);' class='aui-label aui-label-info'>订阅</div></div></div></li>";
+          }
+          start = start+10;
+        } else {
+          for (var i = st; i < searchdata.length; i++) {
+            var str = searchdata[i];
+            if(str.length>36){
+              str = str.substr(0,33)+"...";
+            }
+            html +="<li class='aui-list-item'><div class='aui-list-item-inner'><div param='"+searchdata[i]+"' class='aui-list-item-title'>"+str+"</div><div class='aui-list-item-right'><div onclick='addJournal(this);' class='aui-label aui-label-info'>订阅</div></div></div></li>";
+          }
+          html +="<p style='text-align: center;background-color:#fff;'>没有数据了!</p>";
+          start = searchdata.length;
+        }
+        if(st == 0){
+          $api.html($api.byId('subing-list'), html);
+        } else {
+          $api.append($api.byId('subing-list'), html);
+        }
+      }
+
+      function delJournal(me){
+        //alert('del');
+        var the_dom = $api.closest(me, 'li');
+        var report = $api.attr($api.first(me.parentNode.parentNode),'param');
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Seventh/delJournal',
+            method: 'post',
+            data: {
+                values: {
+                    journal: report,
+                    uid:$api.getStorage('uid')
+                }
+            }
+        },function(ret, err){
+            if (ret) {
+                //console.log( JSON.stringify( ret ) );
+                if(ret.status == 1){
+                  $api.remove(the_dom);
+                }
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+        });
+
+      }
+
+      function addJournal(me){
+        //这里来处理，添加杂志,获取这条杂志信息，发送到服务器，判断，是否在已经订阅里面。如果在，返回，不让添加
+        var report = $api.attr($api.first(me.parentNode.parentNode),'param');
+        //console.log(str);return;
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Seventh/addJournal',
+            method: 'post',
+            data: {
+                values: {
+                    journal:report,
+                    uid:$api.getStorage('uid')
+                }
+            }
+        },function(ret, err){
+            if (ret) {
+                //console.log( JSON.stringify( ret ) );
+                //add dom, windows scroll to top
+                if(ret.status == 1){
+                  api.toast({
+                      msg: '已经订阅了',
+                      duration: 2000,
+                      location: 'bottom'
+                  });
+                  return;
+                }
+                if(ret.status == 2){
+                  //在上面添加dom
+                  var report2 = "";
+                  if(report.length>36){
+                    report2 = report.substr(0,33)+"...";
+                  }
+                  var html = "<li class='aui-list-item'><div class='aui-list-item-inner'><div param='"+report+"' class='aui-list-item-title'>"+report2+"</div><div class='aui-list-item-right'><div onclick='delJournal(this);' class='aui-label aui-label-success'>取消</div></div></div></li>";
+                  $api.append($api.byId('subed-list'), html);
+                  api.toast({
+                      msg: '订阅成功',
+                      duration: 2000,
+                      location: 'bottom'
+                  });
+                  //scroll to top
+                  $api.byId('body').scrollTop = 0;
+                }
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+        });
+
+      }
+
+
+
+  </script>
+  </html>

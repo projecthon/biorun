@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+      <style>
+          body{
+            width:100%;
+          }
+          li{border-bottom: 1px solid #ccc;}
+      </style>
+  </head>
+  <body>
+    <header id='head' class="aui-bar aui-bar-nav">
+            <div class="aui-pull-left aui-btn" onclick="api.closeWin();">
+                <span class="aui-iconfont aui-icon-left"></span>返回
+            </div>
+            <div class="aui-title">编辑标签</div>
+        </header>
+<div class="" style="height:50px;"></div>
+<ul id='taglist' class="aui-list aui-list-in">
+    <li class="aui-list-header">
+        用户标签
+    </li>
+</ul>
+<ul class="aui-list aui-list-in">
+  <li class="aui-list-header">
+      添加标签
+  </li>
+  <li class="aui-list-item">
+      <div class="aui-list-item-inner">
+          <div class="aui-list-item-title"><input style="background-color:#ccc;height:28px;border-radius: 3px;" type="text" id="zdytag" value=""></div>
+          <div class="aui-list-item-right">
+              <div onclick="addUtag();" class="aui-label aui-label-info">确定</div>
+          </div>
+      </div>
+  </li>
+</ul>
+  </body>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript">
+      apiready = function(){
+        initUtag();
+      };
+
+      function initUtag(){
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Fiveth/initUtag',
+            method: 'post',
+            data: {
+                values: {
+                    uid: $api.getStorage('uid')
+                }
+            }
+        },function(ret, err){
+            if (ret) {
+              //console.log( JSON.stringify( ret ) );
+              var html = '';
+              if(ret['tag_arr'].length==0){
+
+              } else {
+                for(i=0;i<ret['tag_arr'].length;i++){
+                  html += "<li class='aui-list-item'><div class='aui-list-item-inner'><div class='aui-list-item-title'>"+ret['tag_arr'][i]+"</div><div class='aui-list-item-right'><div id='"+ret['tag_arr'][i]+"' onclick='delUtag(this);' class='aui-label aui-label-info'>删除</div></div></div></li>";
+                }
+              $api.append($api.byId('taglist'),html);
+              }
+            } else {
+              alert( JSON.stringify( err ) );
+            }
+        });
+
+      }
+
+      function addUtag(){
+        //获取zdytag的值、判断是不是为空，uid和newtag发到后台，
+        var zdytag = $api.val($api.byId('zdytag'));
+        if(zdytag.trim() == ''){
+          api.toast({
+              msg: '标签不能为空',
+              duration: 2000,
+              location: 'bottom'
+          });
+          return;
+        }
+        if(zdytag.indexOf(',') >-1){
+          api.toast({
+              msg: '不能含有逗号',
+              duration: 2000,
+              location: 'bottom'
+          });
+          return;
+        }
+        //console.log(typeof(zdytag)+':'+zdytag);
+        //返回结果，不能添加，添加成功，添加失败
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Fiveth/addUtag',
+            method: 'post',
+            data: {
+                values: {
+                    uid: $api.getStorage('uid'),
+                    newtag:zdytag
+                }
+            }
+        },function(ret, err){
+            if (ret) {
+                if(ret.status==1){
+                  api.toast({
+                      msg: '标签重复了',
+                      duration: 2000,
+                      location: 'bottom'
+                  });
+                } else if(ret.status==2) {
+                  //tianjia success
+                  //把zdytag和li字符串，添加到ul的后面
+                  var str = "<li class='aui-list-item'><div class='aui-list-item-inner'><div class='aui-list-item-title'>"+zdytag+"</div><div class='aui-list-item-right'><div id='"+zdytag+"' onclick='delUtag(this);' class='aui-label aui-label-info'>删除</div></div></div></li>";
+                  $api.append($api.byId('taglist'), str);
+                  api.toast({
+                      msg: '添加成功',
+                      duration: 2000,
+                      location: 'bottom'
+                  });
+
+                } else if(ret.status==3) {
+                  api.toast({
+                      msg: '添加失败',
+                      duration: 2000,
+                      location: 'bottom'
+                  });
+                }
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+        });
+
+      }
+
+      function delUtag(me){
+        //获取标签名称，发送用户id和标签名称过去
+        var oneTag = $api.attr(me,'id');
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Fiveth/delUtag',
+            method: 'post',
+            data: {
+                values: {
+                    uid: $api.getStorage('uid'),
+                    onetag: oneTag
+                }
+            }
+        },function(ret, err){
+            if (ret) {
+              if(ret.status == 1){
+                //去除这个me的parent
+                $api.remove(me.parentNode.parentNode.parentNode);
+                api.toast({
+                    msg: '删除成功',
+                    duration: 2000,
+                    location: 'bottom'
+                });
+
+              } else if(ret.status==2){
+                //删除失败
+                api.toast({
+                    msg: '删除失败',
+                    duration: 2000,
+                    location: 'bottom'
+                });
+
+              }
+              console.log(JSON.stringify( ret ));
+            } else {
+              alert( JSON.stringify( err ) );
+            }
+        });
+
+      }
+  </script>
+  </html>

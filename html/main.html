@@ -1,0 +1,194 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>Hello APP</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+	<style>
+  .hide{display:none;}
+  .aui-bar{padding-top: 20px;}
+	</style>
+</head>
+<body>
+<div id="myhead">
+<header class="aui-bar aui-bar-nav">
+    <div class="aui-pull-left ">
+    </div>
+    <div class="aui-title">最新推荐</div>
+    <div class="aui-pull-right aui-btn aui-btn-outlined" onclick='openSearch();'>
+        <span class="aui-iconfont aui-icon-search"></span>
+    </div>
+</header>
+
+<header class="aui-bar aui-bar-nav aui-margin-b-15">
+    <a class="aui-pull-left aui-btn">
+        <!-- <span class="aui-iconfont aui-icon-left"></span> -->
+    </a>
+    <div class="aui-title">
+        我的收藏
+    </div>
+</header>
+<!-- 下面的代码暂且不用了，修改上面的那个head吧 -->
+<header class="aui-bar aui-bar-nav aui-margin-b-15">
+    <a class="aui-pull-left aui-btn">
+        <span class="aui-iconfont aui-icon-left"></span>
+    </a>
+    <div class="aui-title">
+        <div class="aui-bar aui-bar-btn aui-bar-btn-round">
+            <div  class="aui-bar-btn-item">*********</div>
+            <!-- onclick="changeFrm(1);" -->
+            <div class="aui-bar-btn-item aui-active">**********</div>
+        </div>
+    </div>
+</header>
+<header class="aui-bar aui-bar-nav">
+    <div class="aui-pull-left ">
+    </div>
+    <div class="aui-title">好友</div>
+    <div class="aui-pull-right aui-btn aui-btn-outlined">
+        <img src="../image/newIcon/mans.png" style="width:25px;height:25px;margin:0 auto;" alt="">
+    </div>
+</header>
+<header class="aui-bar aui-bar-nav">
+    <div class="aui-pull-left ">
+    </div>
+    <div class="aui-title">个人中心</div>
+    <div class="aui-pull-right aui-btn aui-btn-outlined">
+        <span class="aui-iconfont aui-icon-search"></span>
+    </div>
+</header>
+</div>
+<footer class="aui-bar aui-bar-tab" id='foot'>
+  <div onclick="changeFrm(0);" class="aui-bar-tab-item aui-active">
+      <img src="../image/newIcon/home.png" style="width:25px;height:25px;margin:0 auto;" alt="">
+      <div class="aui-bar-tab-label">首页</div>
+  </div>
+  <div onclick="changeFrm(1);" class="aui-bar-tab-item" tapmode>
+      <img src="../image/newIcon/folder.png" style="width:25px;height:25px;margin:0 auto;" alt="">
+      <div class="aui-bar-tab-label">收藏夹</div>
+  </div>
+  <div onclick="changeFrm(3);" class="aui-bar-tab-item" tapmode>
+      <img src="../image/newIcon/mans.png" style="width:25px;height:25px;margin:0 auto;" alt="">
+      <div class="aui-bar-tab-label">朋友</div>
+  </div>
+  <div onclick="changeFrm(4);" class="aui-bar-tab-item" tapmode>
+      <img src="../image/newIcon/man.png" style="width:25px;height:25px;margin:0 auto;" alt="">
+      <div class="aui-bar-tab-label">我的</div>
+  </div>
+</footer>
+</body>
+<script type="text/javascript" src="../script/api.js"></script>
+<script type="text/javascript">
+    apiready = function(){
+      //myhead
+      var myhead = $api.byId('myhead');
+      $api.fixStatusBar(myhead);
+      initEvent();
+      openFrm(0);
+    };
+
+   function closeFrm(){
+     api.closeFrame({
+         name: 'frames'
+     });
+   }
+   function initEvent(){
+     api.addEventListener({
+         name: 'keyback'
+     }, function(ret, err){
+         if( ret ){
+              api.closeWidget({
+                  id: 'A6067915603525',
+                  retData: {
+                      name: 'closeWidget'
+                  },
+                  animation: {
+                      type: 'flip',
+                      subType: 'from_bottom',
+                      duration: 500
+                  }
+              });
+
+         }else{
+              alert( JSON.stringify( err ) );
+         }
+     });
+
+   }
+   function changeFrm(index){
+      //既然是切换界面，如果index和stage里面的值相同就不是切换了。
+      if(index == $api.getStorage('frameNumber'))
+      return;
+     closeFrm();
+     openFrm(index);
+   }
+   function openFrm(index){
+     $api.setStorage('frameNumber',index);
+     //修改head样式和foot样式
+     var footItems = $api.domAll($api.byId('foot'), '.aui-bar-tab-item');
+     var heads = $api.domAll('.aui-bar-nav');
+     for (var i = 0; i < footItems.length; i++) {
+       $api.removeCls(footItems[i], 'aui-active');
+     }
+     switch (index) {
+       case 0:
+         $api.addCls(footItems[0], 'aui-active');
+         break;
+       case 1:
+         $api.addCls(footItems[1], 'aui-active');
+         break;
+       case 2:
+         $api.addCls(footItems[1], 'aui-active');
+         break;
+      case 3:
+         $api.addCls(footItems[2], 'aui-active');
+         break;
+       case 4:
+         $api.addCls(footItems[3], 'aui-active');
+         break;
+       default:
+     }
+     for (var i = 0; i < heads.length; i++) {
+       $api.addCls(heads[i], 'hide');
+     }
+     $api.removeCls(heads[index], 'hide');
+     //加载frame页面
+     var frames = ['./frm_home.html','./frm_page3.html','./frm_page2.html','./frm_friend.html','./frm_user.html'];
+     var headPos = $api.offset(heads[index]);
+     var footPos = $api.offset($api.byId('foot'));
+     var frameY = headPos.h;
+     var frameH = footPos.t-frameY;
+
+     api.openFrame({
+         name: 'frames',
+         url: frames[index],
+         rect: {
+             x: 0,
+             y: frameY,
+             w: 'auto',
+             h: frameH
+         },
+         pageParam: {
+             'index':index
+         },
+         bounces: false,
+         bgColor: 'rgba(0,0,0,0)',
+         vScrollBarEnabled: true,
+         hScrollBarEnabled: true
+     });
+   }
+   function openSearch(){
+     api.openWin({
+         name: 'search',
+         url: './win_search.html',
+         pageParam: {
+             name: 'test'
+         }
+     });
+
+   }
+</script>
+</html>

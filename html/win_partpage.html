@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+
+      <style>
+          body{
+             background-color: #fff;
+          }
+          .man-head{
+            width:100%;height: 210px;
+            background-image: url(../image/l1.png);
+          }
+          p{margin-left: 20px;}
+          .pipo{
+              background-color: #fff;
+              border-bottom: 1px solid #ccc;
+              font-size: 14px;
+              line-height: 40px;
+              height: 40px;
+          }
+          .pipo-photo{
+              float:left;
+              width:30px;height:30px;
+              margin: 5px;border: 1px solid #ccc;border-radius: 15px;
+              background-image: url(../image/f1.jpg);
+              background-size: 100% 100%;
+          }
+          .pipo p{margin-left: 10px; color:#000;}
+      </style>
+  </head>
+  <body>
+<!-- 显示个人信息，包括添加好友，删除好友，分组（管理）<br/>
+显示群组信息，包括邀请好友，退出群组和群成员 -->
+<div class="man-head">
+  <p style="color:#fff;">< 返回</p>
+  <div style="color:#fff;position: relative;left:0;top:110px;">
+    <p style="color:#fff;">王者荣耀武汉1群</p>
+    <p style="color:#fff;">主题： 游戏</p>
+    <p style="color:#fff;">人数  81人</p>
+  </div>
+</div>
+<p style="height:70px"></p>
+<div class="man-info">
+  <p>群备注：伯爵大boss （可以修改备注）</p>
+</div>
+<p style="height:70px;"></p>
+<div class="aui-btn aui-btn-block aui-btn-outlined aui-btn-sm">退出群组</div>
+<p style="height:10px;"></p>
+<div class="aui-btn aui-btn-block aui-btn-outlined aui-btn-sm">邀请好友</div>
+
+<p style="border-bottom:1px solid #ccc;">群成员</p>
+<div class="pipo"><div class="pipo-photo" style="background-image: url(../image/age2.jpg);"></div><p>封心的小迷弟(张三丰)</p></div>
+<div class="pipo"><div class="pipo-photo" style="background-image: url(../image/cat.jpg);"></div><p>当年情(周杰伦)</p></div>
+<div class="pipo"><div class="pipo-photo" style="background-image: url(../image/fenland.jpg);"></div><p>芬兰国家队(张三)</p></div>
+  </body>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript">
+      apiready = function(){
+
+      };
+  </script>
+  </html>

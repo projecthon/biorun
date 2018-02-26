@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+      <style>
+          body{
+            background-color: #fff;
+          }
+          li{height:60px;}
+      </style>
+  </head>
+<body>
+    <header class="aui-bar aui-bar-nav">
+        <div class="aui-pull-left aui-btn" onclick="api.closeWin();">
+            <span class="aui-iconfont aui-icon-left"></span>返回
+        </div>
+        <div class="aui-title">搜索</div>
+    </header>
+    <div class="content" style="margin-top:45px;">
+      <!--  -->
+      <ul class="aui-list aui-form-list">
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-label">关键字</div>
+                    <div class="aui-list-item-input">
+                        <input id='keywords' type="text" placeholder="keywords">
+                    </div>
+                </div>
+            </li>
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-input">
+                        <label style="width:24%;"><input id='flag1' type="checkbox" class="aui-checkbox" checked>标题</label>
+                        <label style="width:24%;"><input id='flag2' type="checkbox" class="aui-checkbox" checked>摘要</label>
+                        <label style="width:24%;"><input id='flag3' type="checkbox" class="aui-checkbox" checked>关键字</label>
+                        <label style="width:24%;"><input id='journal' type="checkbox" class="aui-checkbox" checked>期刊</label>
+
+                    </div>
+                </div>
+            </li>
+
+
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner">
+                    <div class="aui-list-item-input">
+                        <label style="width:20%;">开始日期</label>
+                        <label onclick="openTime(1);" id='time1' style="width:28%;background-color:#ccc;color:#fff;text-align:center;">未选择</label>
+                        <label style="width:20%;">结束日期</label>
+                        <label onclick="openTime(2);" id='time2' style="width:28%;background-color:#ccc;color:#fff;text-align:center;">未选择</label>
+                    </div>
+                </div>
+            </li>
+            <li class="aui-list-item">
+                <div class="aui-list-item-inner aui-list-item-center">
+                  <div class="aui-list-item-label">影响因子</div>
+                  <div class="aui-list-item-input">
+                    <label onclick="openImpact();" id='impact' style="background-color:#ccc;width:90%;color:#fff;text-align:center;">未选择</label>
+                  </div>
+                </div>
+            </li>
+            <li class="aui-list-item" style="padding:0 10px;">
+                <div onclick="fnSearch();" class="aui-btn aui-btn-block aui-btn-danger aui-btn-sm" >确认搜索</div>
+            </li>
+        </ul>
+    </div>
+  </body>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript">
+      apiready = function(){
+
+      };
+var keywords='',flag1=false,flag2=false,flag3=false,journal=false,time1='',time2='',impact='';
+
+      function openImpact(){
+        var UIActionSelector = api.require('UIActionSelector');
+        var items = 'widget://res/infect.json';
+        UIActionSelector.open({
+           datas: items,
+           layout: {
+               row: 5,
+               col: 1,
+               height: 30,
+               size: 12,
+               sizeActive: 14,
+               rowSpacing: 5,
+               colSpacing: 10,
+               maskBg: 'rgba(0,0,0,0.2)',
+               bg: '#fff',
+               color: '#888',
+               colorActive: '#f00',
+               colorSelected: '#f00'
+           },
+           animation: true,
+           cancel: {
+               text: '取消',
+               size: 12,
+               w: 90,
+               h: 35,
+               bg: '#fff',
+               bgActive: '#ccc',
+               color: '#888',
+               colorActive: '#fff'
+           },
+           ok: {
+               text: '确定',
+               size: 12,
+               w: 90,
+               h: 35,
+               bg: '#fff',
+               bgActive: '#ccc',
+               color: '#888',
+               colorActive: '#fff'
+           },
+           title: {
+               text: '请选择影响因子',
+               size: 12,
+               h: 44,
+               bg: '#eee',
+               color: '#888'
+           },
+       }, function(ret, err) {
+           if (ret) {
+             if(ret.eventType == 'ok'){
+                $api.html($api.byId('impact'),ret.level1);
+             }
+           } else {
+               alert(JSON.stringify(err));
+           }
+       });
+      }
+
+      function openTime(index){
+        //时间选择，把时间返回给ui
+        api.openPicker({
+            type: 'date_time',
+            date: '2017-01-01 12:30',
+            title: '选择时间'
+        }, function(ret, err) {
+            if (ret) {
+                //console.log(JSON.stringify(ret));
+                //ret.month 和 ret.day需要修改
+                var m = ret.month;
+                var d = ret.day;
+                if(ret.month<10)
+                  m = '0'+ret.month;
+                if(ret.day<10)
+                  d = '0'+ret.day;
+                $ht = ret.year+'-'+m+'-'+d;
+                if(index == 1)
+                  $api.html($api.byId('time1'),$ht);
+                if(index == 2)
+                  $api.html($api.byId('time2'),$ht);
+            } else {
+                alert(JSON.stringify(err));
+            }
+        });
+      }
+
+      function fnSearch(){
+        //处理各个input的值，让其复合 后台接受数据的格式。
+        //var keywords='',flag1=false,flag2=false,flag3=false,flag4=false,time1='',time2='',impact='';
+        keywords = $api.val($api.byId('keywords'));
+        flag1 = $api.byId('flag1').checked;
+        flag2 = $api.byId('flag2').checked;
+        flag3 = $api.byId('flag3').checked;
+        journal = $api.byId('journal').checked;
+        time1 = $api.html($api.byId('time1'));
+        time2 = $api.html($api.byId('time2'));
+        impact = $api.html($api.byId('impact'));
+
+        if(time1 == '未选择')
+            time1 = '';
+        if(time2 == '未选择')
+            time2 = '';
+        if(impact == '未选择')
+            impact = '';
+        impact =impact.substr(5);
+        //console.log(JSON.stringify(impact));
+        if(time1!=''&&time2!=''&&time1>time2){
+          api.toast({
+              msg: '时间错误',
+              duration: 2000,
+              location: 'bottom'
+          });
+          return;
+        }
+        var param = {keywords:keywords,flag1:flag1,flag2:flag2,flag3:flag3,journal:journal,time1:time1,time2:time2,impact:impact};
+        api.openWin({
+            name: 'searchrt',
+            url: './win_searchrt.html',
+            pageParam:param
+        });
+
+      }
+  </script>
+  </html>

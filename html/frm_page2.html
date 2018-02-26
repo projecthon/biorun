@@ -1,0 +1,237 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,aItemress=no">
+    <title>AUI快速完成布局</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <style media="screen">
+      .se{position: fixed;z-index: 10;}
+      .hide{display: none;}
+    </style>
+</head>
+<body>
+<div class='se' style="background-color:#fff;">
+  <div class="">
+    <div class="aui-bar aui-bar-btn" style="width:80%;margin-top:10px;margin-bottom:5px;">
+        <div id='togtags' onclick="toggletags();" class="aui-bar-btn-item">展开标签页</div>
+        <div onclick='uppage(1);' class="aui-bar-btn-item">上一页</div>
+        <div onclick='uppage(2);' class="aui-bar-btn-item">下一页</div>
+    </div>
+  </div>
+  <ul id='tags' class="aui-list aui-list-in hide" style="overflow-y:scroll">
+  </ul>
+</div>
+<div id='artlist' class="aui-content" style="padding-top:5px;">
+
+</div>
+</body>
+<script type="text/template" id='template1'>
+  {{ for(var prop in it){ }}
+  <li onclick="tagFilter(this);" class="aui-list-item" style="border-bottom:1px solid #ddd;border-top:1px solid #ddd;">
+      <div class="aui-list-item-inner">
+          <div class="aui-list-item-title">{{=it[prop]}}</div>
+          <div class="aui-list-item-right">
+          </div>
+      </div>
+  </li>
+  {{ } }}
+</script>
+<script type="text/template" id='template2'>
+  {{ for(var prop in it){ }}
+  <div class="aui-card-list aui-border-t aui-border-b" onclick="openDetail({{=it[prop].id}})" style="margin-bottom:5px;">
+      <div class="aui-info aui-padded-l-15 aui-padded-r-15">
+          <div class="aui-info-item aui-font-size-12">
+              <!-- <img src="../image/demo1.png" style="width:1rem" class="aui-img-round" /> -->
+              <span class="aui-margin-l-5">{{=it[prop].author}} 发表的热门文章</span>
+          </div>
+          <div class="aui-info-item">
+              <i class="aui-iconfont aui-icon-more"></i>
+          </div>
+      </div>
+      <div class="aui-card-list-header aui-padded-t-5 aui-padded-b-5">
+          {{=it[prop].title}}
+      </div>
+      <div class="aui-card-list-content-padded aui-padded-t-0 aui-padded-b-0" style="color:#7b7b7b;">
+          {{=it[prop].title_zh}}
+      </div>
+      <div class="aui-card-list-footer aui-font-size-12" style="color:#999;">
+          <div style="width:100%;">
+              <span>{{=it[prop].journal}}</span><span style='margin-left:30px;border:1px solid #ccc;'>{{=it[prop].time}}</span>
+          </div>
+      </div>
+  </div>
+  {{ } }}
+</script>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/doT.min.js" ></script>
+<script type="text/javascript">
+    apiready = function(){
+        api.parseTapmode();
+        api.addEventListener({
+            name: 'offline'
+        }, function(ret, err){
+            api.toast({
+                msg: '断网了',
+                duration: 2000,
+                location: 'bottom'
+            });
+
+        });
+        initPage2();
+    }
+    var artTags=[];var start = 0;var length=0;
+
+    function initPage2(){
+        //用户id传过去
+        if(api.connectionType == 'none') {
+          api.toast({msg: '网络错误',duration: 2000,location: 'bottom'});
+          return;}
+
+          api.showProgress({
+              title: '努力加载中...',
+              text: '先喝杯茶...',
+              modal: false
+          });
+        var param = {uid:$api.getStorage('uid')};
+        api.ajax({
+            url: 'http://www.ftracker.cn/appserver/index.php/Home/Third/initPage2',
+            method: 'post',
+            data: {
+                values:param
+            }
+        },function(ret, err){
+            if (ret) {
+                //这个ret.tags需要先处理一下长度，再加到页面中
+                var tempFn1 = doT.template($api.byId('template1').innerHTML);
+                for (var i in ret.tags) {
+                  artTags[length] = ret.tags[i];
+                  length++;
+                }
+                //console.log(JSON.stringify(artTags));
+                var tagstr = tempFn1(cut_arr(artTags));     //------
+                $api.html($api.byId('tags'),tagstr);
+                //-----------
+                var str_star = "<div class='buju' style='margin-top:50px;'></div>";
+                var str_end = '<p style="width:100%;text-align:center;">没有数据了</p>';
+                var tempFn = doT.template($api.byId('template2').innerHTML);
+                var artListStr = tempFn(ret.arts);
+                $api.append($api.byId('artlist'),str_star+artListStr+str_end);
+                //---------------------
+            } else {
+                alert( JSON.stringify( err ) );
+            }
+            api.hideProgress();
+        });
+    }
+
+    function cut_arr(arr){
+      if(start>=arr.length || start<0){
+        return false;
+      } else {
+        //返回start开始的4个元素
+        var rt = arr.slice(start,start+4);
+        return rt;
+      }
+    }
+
+    function uppage(index){
+      //1，向上翻页，向下翻页
+      if(api.connectionType == 'none') {
+        api.toast({msg: '网络错误',duration: 2000,location: 'bottom'});
+        return;}
+      if(index == 1){
+        start=start-4;
+        var rt = cut_arr(artTags);
+        //console.log(JSON.stringify(rt));
+        if(rt==false){
+          start+=4;
+          api.toast({
+              msg: '没有数据了',
+              duration: 2000,
+              location: 'bottom'
+          });
+        } else {
+          var tempFn1 = doT.template($api.byId('template1').innerHTML);
+          var tagstr = tempFn1(rt);
+          $api.html($api.byId('tags'),tagstr);
+        }
+      } else {
+        start=start+4;
+        var rt = cut_arr(artTags);
+        if(rt==false){
+          console.log(start);
+          start-=4;
+          api.toast({
+              msg: '没有数据了',
+              duration: 2000,
+              location: 'bottom'
+          });
+        } else {
+          var tempFn1 = doT.template($api.byId('template1').innerHTML);
+          var tagstr = tempFn1(rt);
+          $api.html($api.byId('tags'),tagstr);
+        }
+      }
+    }
+
+    function tagFilter(me){
+      //获得这个tag
+      if(api.connectionType == 'none') {
+        api.toast({msg: '网络错误',duration: 2000,location: 'bottom'});
+        return;}
+      var str = $api.html($api.dom(me,'.aui-list-item-title'));
+      api.showProgress({
+          title: '努力加载中...',
+          text: '先喝杯茶...',
+          modal: false
+      });
+      var param = {tag:str,uid:$api.getStorage('uid')};
+      api.ajax({
+          url: 'http://www.ftracker.cn/appserver/index.php/Home/Third/tagFilter',
+          method: 'post',
+          data: {
+              values:param
+          }
+      },function(ret, err){
+          if (ret) {
+            var str_star = "<div class='buju' style='margin-top:50px;'></div>";
+            var str_end = '<p style="width:100%;text-align:center;">没有数据了</p>';
+            var tempFn = doT.template($api.byId('template2').innerHTML);
+            var artListStr = tempFn(ret);
+            $api.html($api.byId('artlist'),str_star+artListStr+str_end);
+          } else {
+              alert( JSON.stringify( err ) );
+          }
+          api.hideProgress();
+      });
+
+    }
+
+    function toggletags(){
+      var tags = $api.byId('tags');
+      var togtags = $api.byId('togtags');
+      if($api.hasCls(tags, 'hide')){
+        $api.removeCls(tags, 'hide');
+        $api.html(togtags, '折叠标签页');
+      } else {
+        $api.addCls(tags, 'hide');
+        $api.html(togtags, '展开标签页');
+      }
+    }
+
+    function openDetail(id){
+      if(api.connectionType == 'none') {
+        api.toast({msg: '网络错误',duration: 2000,location: 'bottom'});
+        return;}
+      api.openWin({
+          name: 'detail',
+          url: './win_detail.html',
+          pageParam: {
+              artid: id//或者用frameNumber也可以
+          }
+      });
+    }
+</script>
+</html>

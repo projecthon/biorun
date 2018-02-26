@@ -1,0 +1,234 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>AUI快速完成布局</title>
+    <link rel="stylesheet" type="text/css" href="../css/aui.css" />
+    <style type="text/css">
+        .hide{display: none;}
+        .aui-list-item.wechat-top {
+            background-color: #f3f3f7;
+        }
+        .aui-list .wechat-avatar {
+            width:3rem;
+        }
+        .wechat-avatar .aui-row-padded {
+            background-color: #dddee0;
+            padding: 0.1rem;
+            border-radius: 0.2rem;
+            margin-left: -0.05rem;
+            margin-right: -0.05rem;
+        }
+        .wechat-avatar .aui-row-padded [class*=aui-col-xs-] {
+            padding: 0.05rem;
+        }
+        .wechat-avatar,
+        .wechat-avatar > img {
+            border-radius:0.2rem;
+        }
+        .pipo{
+            background-color: #fff;
+            border-bottom: 1px solid #ccc;
+            font-size: 14px;
+            line-height: 40px;
+            height: 40px;
+        }
+        .group-title{
+            border-bottom: 1px solid #ccc;
+            height:30px;line-height: 30px;
+            font-weight: bolder;
+          }
+        .group-title i{margin: 0 10px;}
+        .pipo-photo{
+            float:left;
+            width:30px;height:30px;
+            margin: 5px;border: 1px solid #ccc;border-radius: 15px;
+            background-image: url(../image/f1.jpg);
+            background-size: 100% 100%;
+        }
+        .pipo p{margin-left: 10px; color:#000;}
+        .pipo2{
+            background-color: #fff;
+            border-bottom: 1px solid #ccc;
+            font-size: 14px;
+            line-height: 40px;
+            height: 40px;
+        }
+        .pipo2-photo{
+            float:left;
+            width:30px;height:30px;
+            margin: 5px;border: 1px solid #ccc;border-radius: 15px;
+            background-image: url(../image/f1.jpg);
+            background-size: 100% 100%;
+        }
+        .pipo2 p{margin-left: 10px;color:#000;}
+    </style>
+</head>
+<body>
+  <div class="aui-tab" id="mytab">
+            <div class="aui-tab-item tapmode aui-active">消息</div>
+            <div class="aui-tab-item tapmode">好友</div>
+            <div class="aui-tab-item tapmode">群组</div>
+  </div>
+    <div id="content">
+        <div class="panel" id="panel-message">
+          <!-- 这里显示消息列表 -->
+          <ul class="aui-list aui-media-list">
+            <li class="aui-list-item aui-list-item-middle" onclick="openChat1();">
+                <div class="aui-media-list-item-inner">
+                    <div class="aui-list-item-media wechat-avatar">
+                        <div class="aui-badge">9</div>
+                        <img src="../image/f3.jpg" />
+                    </div>
+                    <div class="aui-list-item-inner">
+                        <div class="aui-list-item-text">
+                            <div class="aui-list-item-title">通用聊天窗口</div>
+                            <div class="aui-list-item-right">星期一</div>
+                        </div>
+                        <div class="aui-list-item-text aui-font-size-12">
+                            how are you?
+                        </div>
+                    </div>
+                </div>
+            </li>
+            <li class="aui-list-item aui-list-item-middle">
+                <div class="aui-media-list-item-inner">
+                    <div class="aui-list-item-media wechat-avatar">
+                        <img src="../image/profile_default.png" />
+                    </div>
+                    <div class="aui-list-item-inner">
+                        <div class="aui-list-item-text">
+                            <div class="aui-list-item-title">张三</div>
+                            <div class="aui-list-item-right">1天前</div>
+                        </div>
+                        <div class="aui-list-item-text aui-font-size-12">
+                            Hello 你好 2.0!
+                        </div>
+                    </div>
+                </div>
+            </li>
+          </ul>
+        </div>
+        <div class="panel hide" id="panel-friend">
+          <div class="aui-searchbar" id="search">
+            <div class="aui-searchbar-input aui-border-radius" onclick="openAddFriend();">
+                <p style="color:#ccc;width:100%;text-align:center;">添加好友</p>
+            </div>
+          </div>
+          <!-- 这里要显示好友、分组 -->
+           <div class="groups">
+             <div class="group-item">
+               <div class="group-title" onclick="fnToggleGroup(this);"><i class="aui-iconfont aui-icon-down"></i>我的好友</div>
+                 <div class="group-list">
+                   <div class="pipo" onclick="openChat();"><div class="pipo-photo" style="background-image: url(../image/ft-app.png);"></div><p>周杰伦</p></div>
+                   <div class="pipo"><div class="pipo-photo"></div><p>张三丰</p></div>
+                   <div class="pipo"><div class="pipo-photo"></div><p>王明阳</p></div>
+                 </div>
+             </div>
+             <div class="group-item">
+               <div class="group-title" onclick="fnToggleGroup(this);"><i class="aui-iconfont aui-icon-down"></i>同事</div>
+               <div class="group-list">
+                 <div class="pipo"><div class="pipo-photo"></div><p>王健林</p></div>
+               </div>
+             </div>
+             <div class="group-item">
+               <div class="group-title" onclick="fnToggleGroup(this);"><i class="aui-iconfont aui-icon-down"></i>家人</div>
+               <div class="group-list">
+                 <div class="pipo"><div class="pipo-photo"></div><p>张三</p></div>
+               </div>
+             </div>
+           </div>
+        </div>
+        <div class="panel hide" id="panel-group">
+          <div class="aui-searchbar" id="search">
+            <div class="aui-searchbar-input aui-border-radius">
+                <p style="color:#ccc;width:100%;text-align: center;">创建群聊</p>
+            </div>
+          </div>
+          <div class="pipo2" onclick="openChat2();"><div class="pipo2-photo" style="background-image: url(../image/ft-app.png);"></div><p>钓友群1</p></div>
+          <div class="pipo2"><div class="pipo2-photo"></div><p>车友群1</p></div>
+          <div class="pipo2"><div class="pipo2-photo"></div><p>武汉开发区3</p></div>
+        </div>
+
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src="../script/api.js" ></script>
+<script type="text/javascript" src="../script/SHA1.js" ></script>
+<script type="text/javascript" src="../script/jquery-2.1.3.min.js" ></script>
+<script type="text/javascript" src="../script/friends-click.js" ></script>
+<script type="text/javascript">
+ apiready = function(){
+   var height=api.frameHeight - 45;
+   $api.css($api.byId('content'), 'height:'+height+'px;');
+   chpanel();//这个是切换面板用的函数，在friends-click.js里面定义的
+   rong = api.require('rongCloud2');
+   rongyun();  //----接入融云
+ }
+
+ // 接入融云
+ function rongyun () {
+     // 初始化rongyun 调用  rong's接收消息
+     rong.init(function(ret, err) {
+         if (ret.status == 'error')
+             api.toast({ msg: err.code });
+     });
+     // 监听接收消息
+     //receiveMsg(); //融云监听接受，然后发送去新的事件，
+     var token = $api.getStorage('token');
+     rong.connect(
+         {
+             token: token
+         },function(ret, err) {
+             if (ret.status == 'success'){
+               console.log("通过token我知道你的id："+ret.result.userId);
+               //api.toast({ msg: })
+             }
+         });
+
+ }
+
+ function fnToggleGroup(me){
+   var list = $api.next(me);
+   $api.toggleCls(list, 'hide');
+   var i = $api.dom(me, '.aui-iconfont');
+   if($api.hasCls(i, 'aui-icon-down')){
+     $api.removeCls(i, 'aui-icon-down');
+     $api.addCls(i, 'aui-icon-left');
+   } else {
+     $api.removeCls(i, 'aui-icon-left');
+     $api.addCls(i, 'aui-icon-down');
+   }
+ }
+
+ function openChat1(){
+   api.openWin({
+       name: 'chat',
+       url: './win_chat.html',
+       pageParam: {
+           pagetype: 1
+       }
+   });
+ }
+
+ function openChat2(){
+   api.openWin({
+       name: 'chat',
+       url: './win_chat.html',
+       pageParam: {
+           pagetype: 2
+       }
+   });
+ }
+
+function openAddFriend(){
+  api.openWin({
+      name: 'addfriend',
+      url: './win_addFriend.html',
+  });
+
+}
+</script>
+</html>

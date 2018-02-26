@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+  <html>
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+      <title>title</title>
+      <link rel="stylesheet" type="text/css" href="../css/api.css"/>
+      <link rel="stylesheet" type="text/css" href="../css/aui.css"/>
+
+      <style>
+          body{
+
+          }
+      </style>
+  </head>
+  <body>
+    <header id='head' class="aui-bar aui-bar-nav">
+            <div onclick="closeDetail();" class="aui-pull-left aui-btn">
+                <span class="aui-iconfont aui-icon-left"></span>返回
+            </div>
+            <div id='artTitle' class="aui-title">&nbsp;</div>
+        </header>
+    <footer id='foot' onclick="fnCollectBtn();" class="aui-bar aui-bar-tab" style="background-color:#03a9f4;">
+            <div class="aui-bar-tab-item"  tapmode style="width: 2.2rem;">
+                <!-- <i class="aui-iconfont aui-icon-comment"></i>
+                <div class="bot-tip">笔记</div> -->
+            </div>
+            <div  class="aui-bar-tab-item" tapmode style="width: 2.2rem;">
+                <!-- <i class="aui-iconfont aui-icon-star"></i> -->
+                <div class="bot-tip" id='colicon'>收藏</div>
+            </div>
+            <div class="aui-bar-tab-item" tapmode style="width: 2.2rem;">
+                <!-- <i class="aui-iconfont aui-icon-paper"></i>
+                <div class="bot-tip">标签</div> -->
+            </div>
+    </footer>
+  </body>
+  <script type="text/javascript" src="../script/api.js"></script>
+  <script type="text/javascript">
+      apiready = function(){
+        $api.setStorage('select1Open', 'no');
+        initEvent();
+        openFrm();
+      };
+      var folders = [];
+      function initEvent(){
+        api.addEventListener({
+            name: 'keyback'
+        }, function(ret, err){
+            if( ret ){
+                 closeDetail();
+            }else{
+                 alert( JSON.stringify( err ) );
+            }
+        });
+        //获取收藏夹---------------------------------------------
+        // var param = {'uid':$api.getStorage('uid')};
+        // api.ajax({
+        //     url: 'http://www.ftracker.cn/appserver/index.php/Home/First/getFolder',
+        //     method: 'post',
+        //     data: {
+        //         values:param
+        //     }
+        // },function(ret, err){
+        //     if (ret) {
+        //         folders = ret;
+        //     } else {
+        //         alert( JSON.stringify( err ) );
+        //     }
+        // });
+
+      }
+      function openFrm(){
+        //设置收藏状态为 未收藏
+        $api.setStorage('is_collect', false);
+        var headPos = $api.offset($api.byId('head'));
+        var footPos = $api.offset($api.byId('foot'));
+        var frameY = headPos.h;
+        var frameH = footPos.t-frameY;
+        api.openFrame({
+            name: 'detailf',
+            url: './detaildemof.html',
+            rect: {
+                x: 0,
+                y: frameY,
+                w: 'auto',
+                h: frameH
+            },
+            pageParam: {
+                artid: api.pageParam['artid']
+            },
+            bounces: true,
+            allowEdit:true,
+            bgColor: 'rgba(0,0,0,0)',
+            vScrollBarEnabled: true,
+            hScrollBarEnabled: true
+        });
+      }
+
+      function upBtn(){
+        //把btn的 收藏 设为 取消收藏
+        $api.html($api.byId('colicon'),'取消收藏');
+      }
+
+      function fnCollectBtn(){
+        //判断收藏与否，收藏/取消收藏 功能
+        //获取btn的html
+
+        var is_collect = $api.getStorage('is_collect');
+          //api.ajax();//取消收藏/收藏
+          if(is_collect == 'true'){ //取消收藏
+
+            var param = {uid:$api.getStorage('uid'),artid:api.pageParam['artid']};
+            api.ajax({
+                url: 'http://www.ftracker.cn/appserver/index.php/Home/First/delCollect',
+                method: 'post',
+                data: {
+                    values: param
+                }
+            },function(ret, err){
+                if (ret) {
+                    //alert( JSON.stringify( ret ) );
+                    if(ret['status'] == 1){
+                      $api.setStorage('is_collect', 'false');
+                      $api.html($api.byId('colicon'),'收藏');
+                      api.execScript({
+                          name: 'detail',
+                          frameName: 'detailf',
+                          script: "addHide();"
+                      });
+                      api.toast({
+                          msg: '取消收藏成功',
+                          duration: 2000,
+                          location: 'bottom'
+                      });
+                    } else{
+                      api.toast({
+                          msg: '取消收藏失败',
+                          duration: 2000,
+                          location: 'bottom'
+                      });
+                    }
+                } else {
+                    alert( JSON.stringify( err ) );
+                }
+            });
+          } else { //打开收藏夹面板
+              //openSelector();
+              var height = api.winHeight-60-50;
+              api.openFrame({
+                  name: 'dirselector',
+                  url: './frm_dirSelector.html',
+                  rect: {
+                      x: 0,
+                      y: 0,
+                      w: 'auto',
+                      h:'auto'
+                  },
+                  pageParam: {
+                    artid:api.pageParam['artid']
+                  },
+                  bounces: false,
+                  bgColor: 'rgba(0,0,0,0.5)',
+                  vScrollBarEnabled: false,
+                  hScrollBarEnabled: false
+              });
+
+          }
+      }
+
+      // function addCollect(fid){
+      //   var param = {uid:$api.getStorage('uid'),artid:api.pageParam['artid'],folderid:fid};
+      //   api.ajax({
+      //       url: 'http://www.ftracker.cn/appserver/index.php/Home/First/addCollect',
+      //       method: 'post',
+      //       data: {
+      //           values: param
+      //       }
+      //   },function(ret, err){
+      //       if (ret) {
+      //         if(ret['status']==1){
+      //           $api.setStorage('is_collect', 'true');
+      //           $api.html($api.byId('colicon'),'取消收藏');
+      //           api.execScript({
+      //               name: 'detail',
+      //               frameName: 'detailf',
+      //               script: "rmHide();"
+      //           });
+      //           api.toast({
+      //               msg: '收藏成功',
+      //               duration: 2000,
+      //               location: 'bottom'
+      //           });
+      //
+      //         } else {
+      //           api.toast({
+      //               msg: '收藏失败',
+      //               duration: 2000,
+      //               location: 'bottom'
+      //           });
+      //
+      //         }
+      //       } else {
+      //           alert( JSON.stringify( err ) );
+      //       }
+      //   });
+      // }
+
+    function closeDetail(){
+      //返回按钮和keyback都调用这个函数，
+      var flag = $api.getStorage('select1Open');
+      if(flag == 'no'){
+        api.closeWin({
+            name: 'detail'
+        });
+        //collectid,folder
+        $api.rmStorage('collectid');
+        $api.rmStorage('folder');
+        $api.rmStorage('is_collect');
+        if(api.pageParam.index==1){
+          api.execScript({
+              name: 'main',
+              script: 'closeFrm();openFrm(1);'
+          });
+        }
+        $api.rmStorage('select1Open');
+      } else {
+        //关闭frame
+        $api.setStorage('select1Open', 'no');
+        api.closeFrame({
+            name: 'dirselector'
+        });
+
+      }
+    }
+
+    function setTitleAndBtn(){
+      var title_zh = $api.getStorage('title_zh');
+      $api.html($api.byId('artTitle'),title_zh);
+      if($api.getStorage('is_collect')=='true') {
+        $api.html($api.byId('colicon'),'取消收藏');
+      } else {
+        $api.html($api.byId('colicon'),'收藏');
+      }
+    }
+  </script>
+  </html>
